@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terroir — 世界中の、まちを変えた取り組みを、始まりから今まで</title>
+<meta name="description" content="世界のまちで実際に行われた取り組みを、始まった年から今までの形で記録する事例データベース。始まってから3年以上あとに書かれた出典があるものだけを収録しています。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Terroir">
+<meta property="og:title" content="Terroir — 世界中の、まちを変えた取り組みを、始まりから今まで">
+<meta property="og:description" content="世界のまちで実際に行われた取り組みを、始まった年から今までの形で記録する事例データベース。始まってから3年以上あとに書かれた出典があるものだけを収録しています。">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='27' fill='%233F9E56' stroke='%2314170F' stroke-width='5'/%3E%3C/svg%3E">
+<script>
+/* data.json は本体（一覧・詳細）と globe.js の両方が要る。それぞれが素直に取りに行くと
+   同じ 1.7MB を2回ダウンロードする（実測 2026-08-25：1件の表示に 3.65MB）。
+   設計規定者 P3 は夜スマホで読む（STATE §1）ので、この二重取得は実害になる。
+   取得を1つの Promise に束ねて共有する。standalone.mjs はこの fetch だけを
+   埋め込み済みデータへの参照に差し替える（差し替え箇所を1つに保つ）。 */
+window.terroirData = function () {
+  return window.__TERROIR_DATA_P__ ||
+    (window.__TERROIR_DATA_P__ = fetch("./data.json").then(function (r) { return r.json(); }));
+};
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 色は「ライトの定義 → prefers-color-scheme:dark で上書き」の2段構造（他方のUIと同じ方式）。
+   ライトの具体値は既存のまま動かしていない。ダークの値は暫定（配色の最終決定はデザイン会話）。
+   green/red/yellow/olive などの強い色（アクセント）はテーマで変えていない。
+   変えているのは地・罫線・本文色など「面」として使われている色だけ。 */
+:root{
+  --font-display:"Archivo Black","Zen Maru Gothic",system-ui,sans-serif;
+  --font-sans:"Zen Maru Gothic","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --bg:#EFEDDC; --ink:#14170F; --surface:#FFFFFF; --paper:#FBFAF2;
+  --green:#3F9E56; --green-deep:#2C7440; --yellow:#F5C227; --red:#E2553C; --olive:#B9A64B;
+  --fg:#14170F; --fg-muted:#5E6355;
+  --rule:#14170F; --wash:#FDF3D3; --land:#7FC98C; --accent:#3F9E56; --accent-2:#F5C227;
+  --globe-stroke:3; --globe-land-stroke:1; --dot:#E2553C; --dot-stroke:#14170F;
+  --globe-btn-border:2.5px solid #14170F;
+  /* 強い色（green/red/yellow等）の上に乗る文字色。アクセント自体は明暗で変えないので、
+     この上の文字色も明暗で変える必要がない＝1つの値でよい */
+  --on-accent:#FFFFFF;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#181A13; --ink:#EDEDE5; --surface:#22241B; --paper:#1D1F17;
+    --fg:#EDEDE5; --fg-muted:#A7AB99;
+    --rule:#EDEDE5; --wash:#2C2E22; --land:#3A5C41;
+    /* --green-deep はリンク文字色として地の上に直接乗る。地が暗転するので
+       文字側だけ明るくする（--green 等アクセントの塗りはそのまま） */
+    --green-deep:#7ED895;
+  }
+}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+*{box-sizing:border-box;}
+a{color:var(--green-deep);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:2px;}
+a:hover{color:var(--red);}
+button{font:inherit;color:inherit;}
+/* ── 目次（S2相当） ──
+   詳細画面の表題・メタ情報の直下、header のすぐ下に貼り付く。項目は5節固定
+   （STATE §4）だが、埋まっているかどうかはレコードごとに違うので empty で
+   グレーアウトする。空の節も消さない（下の「まだ書いていない節」の注記へ飛ぶ）。 */
+#toc{position:sticky;top:var(--header-offset,56px);z-index:8;background:var(--bg);margin-top:16px;padding:10px 0;
+     display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+     border-bottom:2.5px solid var(--ink);}
+#toc:empty{display:none;}
+.toc-item{cursor:pointer;flex:0 0 auto;white-space:nowrap;border:2px solid var(--ink);
+     border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:700;
+     background:var(--surface);color:var(--ink);}
+.toc-item:hover{background:var(--wash);}
+.toc-item.active{background:var(--ink);color:var(--surface);}
+.toc-item.empty{background:transparent;border-style:dashed;color:var(--fg-muted);}
+.toc-item.empty.active{border-style:solid;color:var(--fg-muted);background:var(--wash);}
+/* サイドバーの目次（2026-08-26）。横並びの帯と同じ部品を縦に積む。
+   幅いっぱいの左寄せにして、項目名が省略されないようにする */
+.toc-side{display:block;width:100%;text-align:left;white-space:normal;border-radius:14px;
+     padding:7px 12px;line-height:1.5;}
+</style>
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+</helmet>
+
+<div style="font-family:var(--font-sans);font-size:16px;line-height:1.9;min-height:100vh;padding-bottom:80px;">
+
+  <!-- ヘッダ -->
+  <div id="page-header" style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:3px solid var(--ink);">
+    <div style="max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <button onClick="{{ goTop }}" style="cursor:pointer;background:none;border:0;padding:0;font-family:var(--font-display);font-size:26px;letter-spacing:0.02em;">TERR<span style="color:var(--green);">O</span>IR</button>
+      <div style="font-size:12px;font-weight:700;background:var(--yellow);border:2.5px solid var(--ink);border-radius:999px;padding:2px 12px;">制作中</div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onClick="{{ goTop }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 16px;font-size:12.5px;font-weight:700;letter-spacing:0.06em;background:{{ topBtnBg }};color:{{ topBtnFg }};box-shadow:{{ topBtnShadow }};">TOP</button>
+        <button onClick="{{ goList }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 16px;font-size:12.5px;font-weight:700;letter-spacing:0.06em;background:{{ indexBtnBg }};color:{{ indexBtnFg }};box-shadow:{{ indexBtnShadow }};">INDEX</button>
+      </div>
+      <div style="background:var(--ink);color:var(--bg);border-radius:999px;min-width:48px;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;padding:0 14px;">{{ headerCount }}</div>
+    </div>
+  </div>
+
+  <!-- 読み込みエラー -->
+  <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:30px auto;padding:0 20px;">
+      <div style="background:var(--red);color:var(--surface);border:3px solid var(--ink);border-radius:24px;padding:20px 22px;font-weight:700;">{{ err }}</div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== TOP ===================== -->
+  <sc-if value="{{ isTop }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1180px;margin:0 auto;padding:34px 20px 0;">
+      <div style="font-family:var(--font-display);font-size:{{ heroSize }};line-height:0.98;letter-spacing:-0.01em;line-break:strict;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty;">世界中の、まちを変えた<br>取り組みを、<span style="color:var(--green);">始まりから今まで</span>。</div>
+      <div style="margin-top:16px;font-size:15px;font-weight:500;color:var(--fg-muted);max-width:44em;line-height:1.9;">世界のまちで実際に行われた取り組みを、<strong style="color:var(--ink);">始まった年から今までの形</strong>で記録しています。<strong style="color:var(--ink);">収録の条件は1つだけ——始まってから3年以上あとに書かれた出典があること。</strong>だから「やってみた」の記事は入っていません。うまくいかなかったもの、縮んだもの、終わったものも、そのまま載せています。<br>いまは {{ headerCount }}。<strong style="color:var(--ink);">制作の途中です。</strong></div>
+
+      <!-- 検索窓（S3・新規）。TOP上では結果を出さない。Enter／ボタンでINDEXへ遷移し、
+           そのクエリで絞り込んだ状態で表示する。検索対象はタイトルとsummaryのみ -->
+      <div style="margin-top:22px;display:flex;gap:10px;flex-direction:{{ searchDir }};">
+        <input id="top-search-input" type="text" placeholder="まちの名前、取り組みの内容で探す" onKeyDown="{{ onSearchKeyDown }}"
+               style="flex:1;min-width:0;width:100%;font:inherit;font-size:15px;font-weight:700;padding:14px 18px;border:2.5px solid var(--ink);border-radius:999px;background:var(--surface);color:var(--ink);">
+        <button onClick="{{ doSearch }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:14px 26px;font-size:14px;font-weight:900;background:var(--ink);color:var(--bg);box-shadow:3px 3px 0 var(--ink);width:{{ searchBtnW }};">検索</button>
+      </div>
+
+      <!-- spotcheck:start — 第3層（人によるスポットチェック）への導線。
+           公開用の1枚（standalone.html）には要らないので standalone.mjs が取り除く。 -->
+      <a href="./spotcheck.html" style="margin-top:16px;display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;text-decoration:none;border:2.5px solid var(--ink);border-radius:20px;padding:11px 18px;background:var(--yellow);color:var(--ink);box-shadow:4px 4px 0 var(--ink);" style-hover="transform:translate(-1px,-1px)">
+        <span style="font-family:var(--font-display);font-size:15px;">CHECK</span>
+        <span style="font-size:14.5px;font-weight:900;">校合台をひらく</span>
+        <span style="font-size:12.5px;font-weight:700;opacity:0.8;">本文を出典と突き合わせる（第3層・2割を抽出）</span>
+      </a>
+      <!-- spotcheck:end -->
+
+      <!-- 目的から選ぶ -->
+      <div style="margin-top:34px;background:var(--surface);border:3px solid var(--ink);border-radius:32px;box-shadow:8px 8px 0 var(--ink);padding:26px 22px;">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+          <div style="font-family:var(--font-display);font-size:22px;">PURPOSE</div>
+          <div style="font-size:15px;font-weight:900;">目的から選ぶ</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">絞り込みはこの1軸だけです（0件のものも出しています）</div>
+        </div>
+        <div style="margin-top:18px;display:grid;grid-template-columns:{{ purposeCols }};gap:12px;">
+          <sc-for list="{{ purposes }}" as="p" hint-placeholder-count="8">
+            <button onClick="{{ p.pick }}" style="cursor:pointer;text-align:left;border:2.5px solid var(--ink);border-radius:20px;padding:14px 16px;background:{{ p.bg }};color:{{ p.fg }};box-shadow:{{ p.shadow }};" style-hover="transform:translate(-1px,-1px)">
+              <div style="font-size:15.5px;font-weight:900;line-height:1.5;">{{ p.label }}</div>
+              <div style="margin-top:4px;font-size:12.5px;font-weight:700;opacity:0.85;">{{ p.countLabel }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 今日の4件（S3・新規）。母集団は全5節がそろっているレコードのみ。
+           「おすすめ」「注目」等の評価語は使わない（STATE Values①）。
+           一覧カードと同じ見た目にするが、INDEX画面のテンプレートは触らないため
+           このTOP専用ブロックとして複製している（下のsc-forを参照） -->
+      <sc-if value="{{ hasToday }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:26px;background:var(--surface);border:3px solid var(--ink);border-radius:32px;box-shadow:8px 8px 0 var(--ink);padding:26px 22px;">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+            <div style="font-family:var(--font-display);font-size:22px;">TODAY</div>
+            <div style="font-size:15px;font-weight:900;">今日の4件</div>
+            <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">毎日入れ替わります</div>
+          </div>
+          <div style="margin-top:18px;display:grid;grid-template-columns:{{ todayCols }};gap:16px;">
+            <sc-for list="{{ todayCards }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.open }}" style="cursor:pointer;text-align:left;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
+                <sc-if value="{{ c.photo.show }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:relative;margin:-20px -20px 0;border-bottom:3px solid var(--ink);border-radius:23px 23px 0 0;overflow:hidden;aspect-ratio:16/9;">
+                    <img src="{{ c.photo.url }}" alt="{{ c.photo.alt }}" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'">
+                    <div style="position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--surface);">{{ c.photo.badge }}</div>
+                    <div style="position:absolute;right:10px;bottom:10px;font-size:10px;font-weight:700;color:var(--surface);text-shadow:0 1px 3px rgba(0,0,0,.7);">© {{ c.photo.credit }}</div>
+                  </div>
+                </sc-if>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--yellow);">{{ c.purpose }}</div>
+                  <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--wash);">{{ c.completeness }}</div>
+                  <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--wash);">出典{{ c.srcCount }}本</div>
+                  <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:{{ c.followBg }};color:{{ c.followFg }};">その後 {{ c.followUp }}</div>
+                </div>
+                <div style="font-size:18px;font-weight:900;line-height:1.55;text-wrap:pretty;">{{ c.name }}</div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--fg-muted);">{{ c.nameLocal }}</div>
+                <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">{{ c.meta }}</div>
+                <div style="font-size:14px;font-weight:500;line-height:1.85;text-wrap:pretty;">{{ c.summary }}</div>
+                <div style="margin-top:2px;font-size:12.5px;font-weight:700;color:var(--green-deep);">{{ c.span }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- 途中経過。**隠さずに出す**（Values②「出所を隠さない」の延長）。
+           偏っていること・薄いところを、読者に先に伝える。 -->
+      <div style="margin-top:26px;background:var(--surface);border:3px solid var(--ink);border-radius:32px;box-shadow:8px 8px 0 var(--ink);padding:26px 22px;">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+          <div style="font-family:var(--font-display);font-size:22px;">PROGRESS</div>
+          <div style="font-size:15px;font-weight:900;">いまどこまで来たか</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">偏っているところも出しています</div>
+        </div>
+
+        <div style="margin-top:18px;display:grid;grid-template-columns:{{ statsCols }};gap:10px;">
+          <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+            <div style="border:2.5px solid var(--ink);border-radius:20px;padding:12px 16px;background:{{ s.bg }};color:{{ s.fg }};">
+              <div style="font-family:var(--font-display);font-size:26px;line-height:1;">{{ s.num }}</div>
+              <div style="margin-top:5px;font-size:12.5px;font-weight:700;">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:22px;font-size:13.5px;font-weight:900;">テーマ別の収録数</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:7px;">
+          <sc-for list="{{ themeBars }}" as="t" hint-placeholder-count="10">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="flex:0 0 {{ themeLabelW }};font-size:12px;font-weight:700;line-height:1.4;">{{ t.label }}</div>
+              <div style="flex:1;height:16px;background:var(--wash);border:2px solid var(--ink);border-radius:999px;overflow:hidden;">
+                <div style="width:{{ t.width }};height:100%;background:{{ t.bg }};"></div>
+              </div>
+              <div style="flex:0 0 34px;text-align:right;font-size:12px;font-weight:700;">{{ t.count }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <details style="margin-top:20px;padding-top:16px;border-top:2px dashed rgba(20,23,15,0.2);">
+          <summary style="cursor:pointer;font-size:13px;font-weight:900;">この数字の偏りについて</summary>
+          <div style="margin-top:10px;font-size:13.5px;font-weight:500;color:var(--fg-muted);line-height:1.9;">{{ gapLine }}</div>
+        </details>
+
+        <div style="margin-top:16px;background:var(--wash);border:2.5px solid var(--ink);border-radius:20px;padding:14px 16px;font-size:13.5px;font-weight:500;line-height:1.9;">
+          <strong style="font-weight:900;">読んだ感想と、抜けている事例を教えてください。</strong><br>
+          このページにコメントを付けられます。「この国のこれが抜けている」「この書き方は分かりにくい」——どちらも次に足すものを決めるのに使います。
+        </div>
+      </div>
+
+      <!-- 地球儀（保留中。現時点では位置は国の重心） -->
+      <div id="globe" style="margin:26px 0 0;background:var(--green);border:3px solid var(--ink);border-radius:32px;box-shadow:8px 8px 0 var(--ink);padding:26px 22px;">
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-display);font-size:{{ sectionSize }};line-height:0.95;color:var(--surface);-webkit-text-stroke:3px var(--ink);">GL<span style="color:var(--yellow);">O</span>BE</div>
+          <div style="margin-top:6px;font-size:13px;font-weight:700;color:var(--surface);">収録した国を置いています</div>
+        </div>
+        <div style="margin-top:18px;background:var(--surface);border:3px solid var(--ink);border-radius:28px;padding:18px;max-width:680px;margin-left:auto;margin-right:auto;">
+          <x-import component-from-global-scope="terroir-globe" from="./globe.js" hint-size="100%,500px"></x-import>
+          <div style="margin-top:10px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">レコードに座標を持たせていないため、点は国の重心に置いています。国内のどこかは表していません。</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== 一覧 ===================== -->
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:26px 20px 0;">
+
+      <div style="background:var(--surface);border:3px solid var(--ink);border-radius:28px;box-shadow:6px 6px 0 var(--ink);padding:20px 20px 18px;">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+          <div style="font-family:var(--font-display);font-size:19px;">PURPOSE</div>
+          <div style="font-size:14.5px;font-weight:900;">目的で絞る</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">下のテーマとかけ合わせられます。規模・国・検索での絞り込みは置いていません</div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
+          <button onClick="{{ clearFilter }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ allBg }};color:{{ allFg }};">すべて {{ headerCount }}</button>
+          <sc-for list="{{ purposes }}" as="p" hint-placeholder-count="8">
+            <button onClick="{{ p.pick }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ p.bg }};color:{{ p.fg }};">{{ p.chip }}</button>
+          </sc-for>
+        </div>
+
+        <!-- テーマで絞る（2026-08-26追加・2軸目）。目的×テーマの組み合わせによっては
+             3件未満・0件になるが、グレーアウトせずそのまま件数を出す
+             （STATE §5「成立条件」の例外注記・編者の決定） -->
+        <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(20,23,15,0.2);">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+            <div style="font-family:var(--font-display);font-size:19px;">THEME</div>
+            <div style="font-size:14.5px;font-weight:900;">テーマで絞る</div>
+            <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">目的とかけ合わせた件数です。少ない・0件の組み合わせもそのまま出しています</div>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
+            <button onClick="{{ clearThemeFilter }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ allThemeBg }};color:{{ allThemeFg }};">すべて</button>
+            <sc-for list="{{ themeChips }}" as="t" hint-placeholder-count="10">
+              <button onClick="{{ t.pick }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ t.bg }};color:{{ t.fg }};">{{ t.chip }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(20,23,15,0.2);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button onClick="{{ toggleArchive }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ archiveBg }};color:{{ archiveFg }};">記録棚も見る</button>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">{{ shelfLine }}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;font-size:13px;font-weight:700;color:var(--fg-muted);">{{ resultLine }}</div>
+
+      <!-- 該当なし -->
+      <sc-if value="{{ noResult }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:14px;background:var(--wash);border:3px dashed var(--ink);border-radius:28px;padding:34px 22px;text-align:center;">
+          <div style="font-size:20px;font-weight:900;">該当なし</div>
+          <div style="margin-top:8px;font-size:14px;font-weight:500;color:var(--fg-muted);line-height:1.9;">{{ emptyLine }}<br>収録が進めばここに出ます。</div>
+        </div>
+      </sc-if>
+
+      <div style="margin-top:14px;display:grid;grid-template-columns:{{ cardCols }};gap:16px;">
+        <sc-for list="{{ cards }}" as="c" hint-placeholder-count="3">
+          <button onClick="{{ c.open }}" style="cursor:pointer;text-align:left;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
+            <sc-if value="{{ c.photo.show }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;margin:-20px -20px 0;border-bottom:3px solid var(--ink);border-radius:23px 23px 0 0;overflow:hidden;aspect-ratio:16/9;">
+                <img src="{{ c.photo.url }}" alt="{{ c.photo.alt }}" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'">
+                <div style="position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--surface);">{{ c.photo.badge }}</div>
+                <div style="position:absolute;right:10px;bottom:10px;font-size:10px;font-weight:700;color:var(--surface);text-shadow:0 1px 3px rgba(0,0,0,.7);">© {{ c.photo.credit }}</div>
+              </div>
+            </sc-if>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--yellow);">{{ c.purpose }}</div>
+              <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--wash);">{{ c.completeness }}</div>
+              <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--wash);">出典{{ c.srcCount }}本</div>
+              <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:{{ c.followBg }};color:{{ c.followFg }};">その後 {{ c.followUp }}</div>
+            </div>
+            <div style="font-size:18px;font-weight:900;line-height:1.55;text-wrap:pretty;">{{ c.name }}</div>
+            <div style="font-size:12.5px;font-weight:700;color:var(--fg-muted);">{{ c.nameLocal }}</div>
+            <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">{{ c.meta }}</div>
+            <div style="font-size:14px;font-weight:500;line-height:1.85;text-wrap:pretty;">{{ c.summary }}</div>
+            <div style="margin-top:2px;font-size:12.5px;font-weight:700;color:var(--green-deep);">{{ c.span }}</div>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== 詳細 ===================== -->
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:{{ detailWrapW }};margin:0 auto;padding:22px 20px 0;">
+      <button onClick="{{ goList }}" style="cursor:pointer;background:var(--surface);border:2.5px solid var(--ink);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;box-shadow:3px 3px 0 var(--ink);">← 一覧にもどる</button>
+
+      <!-- 見出し -->
+      <div style="margin-top:18px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <div style="font-size:12px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--yellow);">{{ d.purpose }}</div>
+          <div style="font-size:12px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--wash);">{{ d.theme }}</div>
+          <div style="font-size:12px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--wash);">{{ d.populationScale }}</div>
+        </div>
+        <div style="margin-top:12px;font-size:31px;font-weight:900;line-height:1.4;text-wrap:pretty;">{{ d.name }}</div>
+        <div style="margin-top:4px;font-size:15px;font-weight:700;color:var(--fg-muted);">{{ d.nameLocal }}</div>
+        <div style="margin-top:6px;font-size:13.5px;font-weight:500;color:var(--fg-muted);">{{ d.metaLine }}</div>
+      </div>
+
+      <!-- 目次（狭い画面のときだけ横に出す。広い画面では下のサイドバーが受け持つ） -->
+      <sc-if value="{{ showTopToc }}" hint-placeholder-val="{{ false }}">
+        <div id="toc">
+          <sc-for list="{{ d.toc }}" as="t" hint-placeholder-count="5">
+            <button onClick="{{ t.jump }}" data-target="{{ t.target }}" class="{{ t.cls }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- サイドバーと本文の2段組（狭い画面では1列に落ちる）。
+           **DOM は本文が先、サイドバーが後。** grid-column で置き場所だけ入れ替えて
+           サイドバーを左に出している（読み上げの順序は本文を先にしたいため） -->
+      <div style="display:grid;grid-template-columns:{{ detailCols }};gap:26px;align-items:start;margin-top:8px;">
+      <div style="grid-column:{{ mainCol }};min-width:0;">
+
+      <!-- 表示形式の切り替え（比較のための試作。STATE の記述基準は変えていない） -->
+      <div style="margin-top:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:2.5px solid var(--ink);border-radius:999px;padding:6px 8px;width:fit-content;box-shadow:3px 3px 0 var(--ink);">
+        <div style="font-size:11.5px;font-weight:700;color:var(--fg-muted);padding-left:8px;">表示くらべ</div>
+        <button onClick="{{ modeSections }}" style="cursor:pointer;border:2px solid var(--ink);border-radius:999px;padding:5px 13px;font-size:12.5px;font-weight:700;background:{{ secBg }};color:{{ secFg }};">5節構成（現行）</button>
+        <button onClick="{{ modeProse }}" style="cursor:pointer;border:2px solid var(--ink);border-radius:999px;padding:5px 13px;font-size:12.5px;font-weight:700;background:{{ proBg }};color:{{ proFg }};">C案（要約＋長文＋表）</button>
+      </div>
+
+      <!-- ===== C案：要約＋長文 ===== -->
+      <sc-if value="{{ isProse }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-top:16px;background:var(--wash);border:4px solid var(--ink);border-radius:28px;box-shadow:8px 8px 0 var(--ink);padding:24px;">
+            <div style="font-size:12px;font-weight:700;color:var(--fg-muted);letter-spacing:0.08em;">要約</div>
+            <div style="margin-top:8px;font-size:17px;font-weight:500;line-height:1.95;text-wrap:pretty;"><sc-for list="{{ d.leadRuns }}" as="t" hint-placeholder-count="1"><span style="font-weight:{{ t.weight }};font-family:{{ t.family }};font-size:{{ t.size }};background:{{ t.bg }};padding:{{ t.pad }};border-radius:5px;">{{ t.text }}</span></sc-for></div>
+          </div>
+
+          <sc-if value="{{ d.hasProse }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:16px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:24px;">
+              <sc-for list="{{ d.proseParas }}" as="p" hint-placeholder-count="4">
+                <div style="margin-top:{{ p.gap }};font-size:15.5px;font-weight:500;line-height:2;text-wrap:pretty;white-space:pre-wrap;"><sc-for list="{{ p.runs }}" as="t" hint-placeholder-count="1"><span style="font-weight:{{ t.weight }};font-family:{{ t.family }};font-size:{{ t.size }};background:{{ t.bg }};padding:{{ t.pad }};border-radius:5px;">{{ t.text }}</span></sc-for></div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ d.noProse }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;border:2.5px dashed var(--ink);border-radius:20px;padding:16px 18px;">
+              <div style="font-size:14px;font-weight:700;color:var(--fg-muted);">本文はまだ書いていません（stub）。</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- 5節（順序固定。何をしたか が最上部、真似するなら を最強調）
+           空の節は箱を出さない。ただし「どの節が未記入か」は下に必ず明示する
+           （STATE Values②「出所を隠さない」。黙って消すと、書いていないのか
+             出典に無いのかが読み手から区別できなくなる） -->
+      <sc-if value="{{ d.isArchive }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:20px;background:var(--ink);color:var(--surface);border:3px solid var(--ink);border-radius:22px;padding:16px 20px;font-size:15px;font-weight:700;line-height:1.9;">{{ d.archiveNote }}</div>
+      </sc-if>
+
+      <sc-if value="{{ isSections }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <sc-for list="{{ d.groups }}" as="g" hint-placeholder-count="3">
+          <div id="{{ g.id }}" style="background:{{ g.bg }};border:{{ g.border }};border-radius:26px;box-shadow:{{ g.shadow }};padding:{{ g.pad }};scroll-margin-top:var(--toc-offset,110px);">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+              <div style="font-family:var(--font-display);font-size:13px;color:var(--fg-muted);letter-spacing:0.06em;">{{ g.en }}</div>
+              <div style="font-size:{{ g.titleSize }};font-weight:900;line-height:1.5;">{{ g.label }}</div>
+              <sc-if value="{{ g.isKey }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--yellow);">P3が実際に使うのはここ</div>
+              </sc-if>
+            </div>
+
+            <!-- その後のまとまりの冒頭に置く要約（STATE §4） -->
+            <sc-if value="{{ g.hasFollowNote }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;background:var(--green);color:var(--surface);border:2.5px solid var(--ink);border-radius:20px;padding:14px 18px;">
+                <div style="font-size:12px;font-weight:900;letter-spacing:0.08em;">その後の要約</div>
+                <div style="margin-top:5px;font-size:15px;font-weight:700;line-height:1.9;text-wrap:pretty;">{{ g.followNote }}</div>
+              </div>
+            </sc-if>
+
+            <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="3">
+              <div style="margin-top:16px;">
+                <!-- 要約は3節を束ねるので小見出しを出す。1節だけのまとまりでは出さない -->
+                <sc-if value="{{ g.showItemLabels }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:13px;font-weight:900;color:var(--green-deep);border-left:4px solid var(--green);padding-left:10px;">{{ s.label }}</div>
+                </sc-if>
+                <div style="margin-top:8px;">
+                  <sc-for list="{{ s.paras }}" as="p" hint-placeholder-count="2">
+                    <div style="margin-top:{{ p.gap }};font-size:{{ g.bodySize }};font-weight:500;line-height:2;text-wrap:pretty;white-space:pre-wrap;"><sc-for list="{{ p.runs }}" as="t" hint-placeholder-count="1"><span style="font-weight:{{ t.weight }};font-family:{{ t.family }};font-size:{{ t.size }};background:{{ t.bg }};padding:{{ t.pad }};border-radius:5px;">{{ t.text }}</span></sc-for></div>
+                  </sc-for>
+                </div>
+                <!-- 円換算（「いくらかかったか」だけに出す）。本文は出典どおりのままで、
+                     これは build が導出した目安である。**どのレートで換算したかを必ず添える** -->
+                <sc-if value="{{ s.hasCost }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:14px;border:2.5px dashed var(--ink);border-radius:18px;padding:14px 16px;background:var(--surface);">
+                    <div style="font-size:12.5px;font-weight:900;">日本円でのおおよその見当</div>
+                    <div style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">
+                      <sc-for list="{{ s.costRows }}" as="c" hint-placeholder-count="2">
+                        <div style="font-size:13.5px;font-weight:700;line-height:1.7;">{{ c.raw }} ≒ {{ c.yen }}<span style="font-weight:500;color:var(--fg-muted);">{{ c.scale }}</span></div>
+                      </sc-for>
+                    </div>
+                    <div style="margin-top:10px;font-size:11.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">{{ s.costNote }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <!-- 未記入の節（5節構成のときだけ。C案には節が無いので出さない） -->
+      <sc-if value="{{ showEmptyNote }}" hint-placeholder-val="{{ false }}">
+        <div id="{{ d.emptyNoteId }}" style="margin-top:16px;border:2.5px dashed var(--ink);border-radius:20px;padding:14px 18px;background:transparent;scroll-margin-top:var(--toc-offset,110px);">
+          <div style="font-size:14px;font-weight:900;">まだ書いていない節：{{ d.emptySectionList }}</div>
+          <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">{{ d.emptySectionNote }}</div>
+        </div>
+      </sc-if>
+
+      <!-- 出典に書かれていなかった項目 -->
+      <div style="margin-top:20px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:20px;">
+        <div style="font-size:16px;font-weight:900;">出典に書かれていなかった項目</div>
+        <sc-if value="{{ d.noUnknown }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:8px;font-size:14.5px;font-weight:700;color:var(--green-deep);">すべての項目が出典から埋まっています</div>
+        </sc-if>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+          <sc-for list="{{ d.unknownFields }}" as="u" hint-placeholder-count="1">
+            <div style="font-size:14px;font-weight:700;border:2.5px solid var(--ink);border-radius:999px;padding:4px 14px;background:var(--wash);">{{ u.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 出典間で食い違う項目 -->
+      <sc-if value="{{ d.hasDiscrepancies }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:16px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:20px;">
+          <div style="font-size:16px;font-weight:900;">出典によって食い違う項目</div>
+          <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">どちらが正しいかは決めていません。両方をそのまま並べています。</div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:14px;">
+            <sc-for list="{{ d.discrepancies }}" as="g" hint-placeholder-count="1">
+              <div style="border:2.5px solid var(--ink);border-radius:20px;overflow:hidden;">
+                <div style="background:var(--ink);color:var(--bg);padding:6px 14px;font-size:13.5px;font-weight:700;">{{ g.label }}</div>
+                <div style="display:flex;flex-direction:column;">
+                  <sc-for list="{{ g.values }}" as="v" hint-placeholder-count="2">
+                    <div style="display:grid;grid-template-columns:{{ g.cols }};gap:10px;padding:11px 14px;border-top:{{ v.sep }};align-items:baseline;">
+                      <div style="font-size:19px;font-weight:900;">{{ v.value }}</div>
+                      <div style="font-size:13px;font-weight:500;color:var(--fg-muted);line-height:1.7;">{{ v.published }}<br><a href="{{ v.url }}" target="_blank" rel="noopener">{{ v.host }}</a></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- 事実の一覧（2026-08-26 簡素化。削った項目は detail() のコメント参照） -->
+      <div id="d-facts" style="margin-top:16px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:20px;scroll-margin-top:var(--toc-offset,110px);">
+        <div style="font-size:16px;font-weight:900;">わかっていること</div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;">
+          <sc-for list="{{ d.rows }}" as="r" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:{{ d.rowCols }};gap:12px;padding:9px 0;border-top:{{ r.sep }};align-items:baseline;">
+              <div style="font-size:13px;font-weight:700;color:var(--fg-muted);">{{ r.k }}</div>
+              <div style="font-size:15px;font-weight:{{ r.weight }};line-height:1.8;">{{ r.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 出典。**必ず出す**（STATE Values②） -->
+      <div id="d-sources" style="margin-top:16px;background:var(--paper);border:3px solid var(--ink);border-radius:26px;padding:20px;scroll-margin-top:var(--toc-offset,110px);">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:16px;font-weight:900;">出典</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">報道日の古い順</div>
+        </div>
+
+        <div style="margin-top:10px;background:var(--green);color:var(--surface);border:2.5px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:14px;font-weight:700;line-height:1.7;">{{ d.spanNote }}</div>
+
+        <sc-if value="{{ d.singleOutlet }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px;background:var(--yellow);border:2.5px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:14px;font-weight:700;line-height:1.7;">{{ d.singleOutletNote }}</div>
+        </sc-if>
+
+        <sc-if value="{{ d.selfReported }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px;background:var(--yellow);border:2.5px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:14px;font-weight:700;line-height:1.7;">{{ d.selfReportedNote }}</div>
+        </sc-if>
+
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:14px;">
+          <sc-for list="{{ d.sources }}" as="s" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:2.6em 1fr;gap:10px;">
+              <div style="font-family:var(--font-display);font-size:12px;color:var(--fg-muted);padding-top:6px;">{{ s.n }}</div>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--green-deep);">{{ s.head }}</div>
+                <div style="font-size:15px;font-weight:700;line-height:1.75;text-wrap:pretty;"><a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 裏取りに使った出典 -->
+      <sc-if value="{{ d.hasContext }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:16px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:20px;">
+          <div style="font-size:16px;font-weight:900;">裏取りに使った出典</div>
+          <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">人口や制度名の確認に使ったもので、この取り組みを報じた記事ではありません。出典の本数には数えていません。</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ d.contextSources }}" as="c" hint-placeholder-count="1">
+              <div style="font-size:14px;font-weight:700;"><a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.title }}</a></div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- スポットチェック用 -->
+      <div style="margin-top:16px;background:var(--wash);border:3px solid var(--ink);border-radius:26px;padding:20px;">
+        <div style="font-size:16px;font-weight:900;">人が突き合わせるための再掲</div>
+        <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">STATE §4 第3層（人間のスポットチェック20%）用です。</div>
+        <sc-if value="{{ d.hasSpotcheck }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border:2.5px solid var(--ink);border-radius:18px;background:var(--surface);padding:12px 14px;font-size:14px;font-weight:500;line-height:1.9;white-space:pre-wrap;">{{ d.spotcheckNote }}</div>
+        </sc-if>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
+          <sc-for list="{{ d.sources }}" as="s" hint-placeholder-count="3">
+            <div style="font-size:13.5px;font-weight:500;line-height:1.9;">{{ s.n }} {{ s.head }} — <a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.url }}</a></div>
+          </sc-for>
+        </div>
+        <div style="margin-top:12px;font-size:12.5px;font-weight:700;color:var(--fg-muted);">最終確認日 {{ d.lastVerified }}</div>
+      </div>
+
+      <!-- 関連する取り組み（2026-08-26 新設）。
+           `related_projects` は153件すべて空なので、目的・規模・テーマ・国の一致から出す。
+           **なぜ出てきたのかを必ず添える**（並べただけだと読み手が理由を推測してしまう） -->
+      <sc-if value="{{ d.hasRelated }}" hint-placeholder-val="{{ true }}">
+        <div id="d-related" style="margin-top:16px;background:var(--surface);border:3px solid var(--ink);border-radius:26px;padding:20px;scroll-margin-top:var(--toc-offset,110px);">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+            <div style="font-family:var(--font-display);font-size:13px;color:var(--fg-muted);letter-spacing:0.06em;">RELATED</div>
+            <div style="font-size:16px;font-weight:900;">関連する取り組み</div>
+          </div>
+          <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">目的・規模・テーマ・国の重なりで出しています。Terroir が似ていると判断したものではありません。</div>
+          <div style="margin-top:14px;display:grid;grid-template-columns:{{ relatedCols }};gap:12px;">
+            <sc-for list="{{ d.related }}" as="x" hint-placeholder-count="4">
+              <button onClick="{{ x.open }}" style="cursor:pointer;text-align:left;background:var(--paper);border:2.5px solid var(--ink);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;" style-hover="transform:translate(-1px,-1px)">
+                <div style="font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--wash);width:fit-content;">{{ x.why }}</div>
+                <div style="font-size:14.5px;font-weight:900;line-height:1.6;text-wrap:pretty;">{{ x.name }}</div>
+                <div style="font-size:12px;font-weight:500;color:var(--fg-muted);">{{ x.meta }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="height:40px;"></div>
+      </div><!-- /本文列 -->
+
+      <!-- サイドバー（広い画面のみ。狭い画面では上の横並び目次が受け持つ） -->
+      <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ false }}">
+        <div style="grid-column:{{ sideCol }};grid-row:1;position:sticky;top:calc(var(--header-offset,56px) + 16px);display:flex;flex-direction:column;gap:14px;">
+          <div style="background:var(--surface);border:2.5px solid var(--ink);border-radius:22px;padding:16px 18px;">
+            <div style="font-size:12px;font-weight:900;letter-spacing:0.06em;color:var(--fg-muted);">この記事の中</div>
+            <div id="toc-side" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+              <sc-for list="{{ d.toc }}" as="t" hint-placeholder-count="6">
+                <button onClick="{{ t.jump }}" data-target="{{ t.target }}" class="{{ t.cls }} toc-side">{{ t.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:2.5px solid var(--ink);border-radius:22px;padding:16px 18px;">
+            <div style="font-size:12px;font-weight:900;letter-spacing:0.06em;color:var(--fg-muted);">要点</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;">
+              <sc-for list="{{ d.side }}" as="s" hint-placeholder-count="7">
+                <div style="display:grid;grid-template-columns:4.5em 1fr;gap:8px;padding:6px 0;border-top:{{ s.sep }};align-items:baseline;">
+                  <div style="font-size:11.5px;font-weight:700;color:var(--fg-muted);">{{ s.k }}</div>
+                  <div style="font-size:13px;font-weight:700;line-height:1.6;">{{ s.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+      </div><!-- /2段組 -->
+    </div>
+  </sc-if>
+
+  <!-- フッタ（2026-08-26 新設）。公開に必要な断り書きの置き場。
+       **未決のものは「未定」と書く。** 決まっていないライセンスを書いてしまうと、
+       読み手は決まっていると受け取る（STATE Values②「出所を隠さない」）。
+       写真の権利だけは決定を要しない事実なので、いま書ける -->
+  <div style="max-width:1180px;margin:40px auto 0;padding:26px 20px 60px;border-top:3px solid var(--ink);">
+    <div style="font-family:var(--font-display);font-size:20px;">TERR<span style="color:var(--green);">O</span>IR</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:500;color:var(--fg-muted);line-height:1.9;max-width:52em;">
+      世界のまちで実際に行われた取り組みを、始まった年から今までの形で記録しています。
+      収録の条件は、始まってから3年以上あとに書かれた出典があること。<strong style="color:var(--ink);">制作中です。</strong>
+    </div>
+    <div style="margin-top:18px;display:grid;grid-template-columns:{{ footCols }};gap:18px;max-width:60em;">
+      <div style="border:2px solid var(--ink);border-radius:16px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:900;">本文とデータの扱い</div>
+        <div style="margin-top:5px;font-size:12px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
+          本文とデータは <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" target="_blank" rel="noopener" style="color:var(--green-deep);font-weight:700;">CC BY-SA 4.0</a>（表示＋継承）で公開しています。
+          出典元を明記すれば自由に使えます。二次利用（翻訳・転載等）も同じ条件で公開してください。写真は対象外です（下記）。
+        </div>
+      </div>
+      <div style="border:2px solid var(--ink);border-radius:16px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:900;">写真の権利</div>
+        <div style="margin-top:5px;font-size:12px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
+          掲載している写真は<strong style="color:var(--ink);">Terroir のものではありません。</strong>
+          それぞれの出典が持つもので、撮影・掲載元を各写真に添え、元の記事へ辿れるようにしています。
+        </div>
+      </div>
+      <div style="border:2px dashed var(--ink);border-radius:16px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:900;">間違いを見つけたら</div>
+        <div style="margin-top:5px;font-size:12px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
+          訂正の申し立て先は <strong style="color:var(--ink);">corrections@terroir.wiki</strong> に決まりましたが、
+          ドメイン未登録のため<strong style="color:var(--ink);">まだ有効ではありません</strong>。
+          それまでは、各記事に載せた出典の URL を確かめてください。
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:11.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
+      引用は原文15語未満・1記事1回に留め、全訳や記事写真の転載はしていません。
+      本文の数値・固有名詞は出典に当たって確かめています（{{ verifiedNote }}）。
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:960},&quot;initialView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;top&quot;,&quot;list&quot;,&quot;detail&quot;],&quot;default&quot;:&quot;top&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;表示&quot;}}">
+
+// STATE §3 の目的8種。順序も表のとおり。0件のものも必ず出す。
+const PURPOSES = [
+  "人を呼ぶ",
+  "住む人を増やす・戻す",
+  "空間をひらく",
+  "歩けるようにする",
+  "商いを起こす",
+  "お金を地域で回す",
+  "住民が決める",
+  "誇りをつくる"
+];
+
+// STATE §3 のテーマ10種。順序は固定（途中経過の帯で使う）。
+const THEMES = [
+  "空き家・空き店舗・遊休不動産",
+  "学校・公共施設",
+  "交通・道路・駅",
+  "商店街・市場",
+  "農林水産・食",
+  "文化・アート・祭り",
+  "自然・緑地・水辺",
+  "エネルギー・資源循環",
+  "住まいと暮らし（住宅・医療・福祉・子育て）",
+  "デジタル・情報発信"
+];
+
+// STATE §4 の5節。順序は固定。「真似するなら最低何が必要か」を最も目立たせる。
+const SECTIONS = [
+  "何をしたか",
+  "誰が始めたか",
+  "いくらかかったか",
+  "真似するなら最低何が必要か",
+  "今どうなっているか"
+];
+const KEY_SECTION = "真似するなら最低何が必要か";
+// 円換算を出す節（STATE §4 の5節のうちここだけ）
+const COST_SECTION = "いくらかかったか";
+
+// ── 詳細画面の並び（2026-08-26 改） ──────────────────────────────────────
+// **レコードの5節構成（STATE §4）は変えていない。読ませ方だけを組み替えている。**
+// 「何をしたか／誰が始めたか／いくらかかったか」を1つの要約にまとめ、
+// STATE §4 が「記事内で最も厚く書く」と定めた「真似するなら」を独立させて強調し、
+// 「今どうなっているか」は follow_up_note とあわせて1つにする。
+const GROUPS = [
+  { id: "d-g-summary", label: "要約", en: "SUMMARY",
+    members: ["何をしたか", "誰が始めたか", "いくらかかったか"] },
+  { id: "d-g-key", label: "このプロジェクトのポイント", en: "KEY POINTS",
+    members: [KEY_SECTION], isKey: true },
+  { id: "d-g-after", label: "その後、いまどうなっているか", en: "WHAT HAPPENED SINCE",
+    members: ["今どうなっているか"] },
+];
+// 目次に出す、節以外の行き先
+const EXTRA_TOC = [
+  { id: "d-facts", label: "わかっていること" },
+  { id: "d-sources", label: "出典" },
+  { id: "d-related", label: "関連する取り組み" },
+];
+// 設計規定者 P3 の年予算（STATE §1）。金額の見当をこの単位でも示す
+const P3_ANNUAL_BUDGET = 2000000;
+// 目次（S2相当）の空節がジャンプする先。「まだ書いていない節」の注記のid
+const EMPTY_NOTE_ID = "d-empty-note";
+
+// unknown_fields をそのまま出すと読めないので日本語にする
+const FIELD_JA = {
+  funding_scale: "かかった費用",
+  status_current: "今どうなっているか",
+  population_current: "人口",
+  population_scale: "人口規模",
+  start_year: "開始年",
+  end_year: "終了年",
+  actor_type: "担い手の種類",
+  lead_actor: "中心になった団体",
+  component_types: "ハード／ソフト",
+  components: "打ち手",
+  theme: "テーマ",
+  purpose: "目的",
+  region: "地域",
+  municipality: "自治体",
+  name_local: "現地での名称",
+  last_verified: "最終確認日",
+  related_projects: "関係する取り組み",
+  trigger_note: "きっかけの覚え書き"
+};
+
+const LANG_JA = { nl: "オランダ語", en: "英語", ja: "日本語", de: "ドイツ語", pt: "ポルトガル語",
+  vi: "ベトナム語", it: "イタリア語", da: "デンマーク語", fy: "西フリジア語" };
+
+const CHIP_BG = ["var(--green)", "var(--yellow)", "var(--red)", "var(--olive)"];
+const CHIP_FG = ["var(--on-accent)", "var(--ink)", "var(--on-accent)", "var(--ink)"];
+
+const HS_JA = { hard: "ハード", soft: "ソフト", hybrid: "両方" };
+
+class Component extends DCLogic {
+  // mode は表示形式の比較用。"sections"（現行）/ "prose"（C案）
+  state = { data: null, err: null, view: null, id: null, purpose: null, theme: null, q: null, w: 1200, mode: "sections", archive: false };
+
+  componentDidMount() {
+    // 取得口は head の window.terroirData()（globe.js と共有。二重取得を止めるため）
+    window.terroirData().then(d => this.setState({ data: d }))
+      .catch(e => this.setState({ err: "data.json を読み込めませんでした（" + e.message + "）。npm run ui で起動してください。" }));
+    this._onResize = () => this.setState({ w: window.innerWidth });
+    this.setState({ w: window.innerWidth });
+    window.addEventListener("resize", this._onResize);
+
+    // ── URL化 ──────────────────────────────────────────────────────────
+    // ブラウザ既定の scrollRestoration:"auto" を切る。他方のUI（S2）で見つかった
+    // バグと同じ理由：popstate で前回のスクロール量が自動復元されると、
+    // こちらの明示的な scrollTo(0,0) が後から上書きされてしまう。
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    const initial = this.parseHash();
+    this.setState(initial);
+    this._onPopState = () => {
+      this.setState(this.parseHash());
+      if (this.parseHash().view === "detail") window.scrollTo(0, 0);
+    };
+    window.addEventListener("popstate", this._onPopState);
+  }
+  componentDidUpdate() {
+    // 詳細を「5節構成」で見ているときだけ目次のobserverを持つ。
+    // id か mode が変わったとき（＝節の中身が変わったとき）だけ作り直す。
+    // resize 等の再描画のたびに作り直さないための簡単なキー比較
+    const onDetailSections = this.state.view === "detail" && this.state.id && this.state.mode !== "prose";
+    // 目次の置き場所は画面幅で変わる（サイドバー ⇄ 上の帯）ので、幅の段もキーに入れる。
+    // これを入れないと、リサイズで目次が入れ替わっても observer が古いままになる
+    const wide = this.state.w >= 1080 ? "wide" : "narrow";
+    const key = onDetailSections ? this.state.id + "|" + this.state.mode + "|" + wide : null;
+    if (key !== this._tocKey) {
+      if (key) {
+        // data.json の読み込み待ちで #toc がまだ無いことがある。
+        // 失敗したら _tocKey を更新しない＝次の componentDidUpdate でもう一度試す
+        if (this.refreshTocObserver()) this._tocKey = key;
+      } else {
+        this._tocKey = null;
+        if (this._tocObserver) { this._tocObserver.disconnect(); this._tocObserver = null; }
+      }
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("popstate", this._onPopState);
+    if (this._tocObserver) this._tocObserver.disconnect();
+  }
+
+  // #detail/<id> ／ #list ／ #list/<purpose> ／ それ以外は top。
+  // 動線はクリックからの遷移（navigate）と、戻る/進む（popstate）の両方で
+  // この1つのパーサを共有する
+  // #detail/<id> ／ #list ／ #list/<purpose> ／ それぞれに ?theme=<theme>&q=<query> が付きうる。
+  // theme・q はどちらも同じ「同じ #list に合流するクエリ文字列」なので URLSearchParams で一括して読む
+  // （2026-08-26・目的×テーマの2軸UI追加。編者の決定は STATE §5「成立条件」の例外注記を参照）
+  parseHash() {
+    const h = location.hash;
+    let m;
+    if ((m = /^#detail\/(.+)$/.exec(h))) return { view: "detail", id: decodeURIComponent(m[1]), purpose: null, theme: null, q: null };
+    if ((m = /^#list(?:\/([^?]+))?(\?.*)?$/.exec(h))) {
+      const sp = new URLSearchParams(m[2] || "");
+      return { view: "list", id: null, purpose: m[1] ? decodeURIComponent(m[1]) : null, theme: sp.get("theme") || null, q: sp.get("q") || null };
+    }
+    return { view: "top", id: null, purpose: null, theme: null, q: null };
+  }
+  hashFor(view, id, purpose, theme, q) {
+    if (view === "detail" && id) return "#detail/" + encodeURIComponent(id);
+    if (view === "list") {
+      let h = purpose ? "#list/" + encodeURIComponent(purpose) : "#list";
+      const sp = new URLSearchParams();
+      if (theme) sp.set("theme", theme);
+      if (q) sp.set("q", q);
+      const qs = sp.toString();
+      if (qs) h += "?" + qs;
+      return h;
+    }
+    return "#top";
+  }
+  // クリックからの遷移はここを通す。URLを進め、詳細を開くときだけ
+  // 先頭にスクロールを戻す（一覧・TOPへ戻るときは戻していない。元のスクロール位置の
+  // ままにしている。他方のUIの closeDetail と同じ扱い）
+  navigate(view, id, purpose, theme, q) {
+    // purpose・theme・q を渡さなかった呼び出し（goTop/goList/open等）は今の状態を保つ。
+    // setState に渡す値とURLに刻む値を同じ1つの変数からそろえないと、
+    // 「フィルタを保ったままTOPと一覧を行き来する」ときにURLだけがズレる
+    const effPurpose = purpose === undefined ? this.state.purpose : purpose;
+    const effTheme = theme === undefined ? this.state.theme : theme;
+    const effQ = q === undefined ? this.state.q : (q || null);
+    this.setState({ view: view, id: id || null, purpose: effPurpose, theme: effTheme, q: effQ });
+    try { history.pushState({ view: view, id: id || null }, "", this.hashFor(view, id, effPurpose, effTheme, effQ)); } catch (e) { }
+    if (view === "detail") window.scrollTo(0, 0);
+  }
+
+  // 目次（S2相当）：#toc がDOMに出た後に呼ぶ。ヘッダ＋目次の実測高さを
+  // --toc-offset に渡し（scroll-margin-top と揃える）、IntersectionObserver で
+  // 現在表示中の節に .active を付ける。外部ライブラリは使わない
+  refreshTocObserver() {
+    if (this._tocObserver) { this._tocObserver.disconnect(); this._tocObserver = null; }
+    // 目次は画面幅で置き場所が変わる（広いとサイドバー #toc-side、狭いと上の帯 #toc）
+    const toc = document.getElementById("toc") || document.getElementById("toc-side");
+    const header = document.getElementById("page-header");
+    if (!toc) return false; // データ読み込み待ち等でまだDOMに無い。呼び出し側が次回また試す
+    // 2つの変数は意味が違う。混ぜると #toc 自身の sticky top がずれて
+    // 自分の高さぶん余計に下にずれ込む（実測で判明したバグ）。
+    //   --header-offset … ヘッダの高さだけ（#toc の top に使う）
+    //   --toc-offset     … ヘッダ＋目次の高さ（節の scroll-margin-top に使う）
+    const headerH = header ? header.offsetHeight : 0;
+    // 上の帯のときは、その帯の高さも避けないと見出しが隠れる。
+    // サイドバーのときは本文の上に重なるものが無いので、ヘッダの分だけでよい
+    const isSide = toc.id === "toc-side";
+    const offset = headerH + (isSide ? 16 : toc.offsetHeight);
+    document.documentElement.style.setProperty("--header-offset", headerH + "px");
+    document.documentElement.style.setProperty("--toc-offset", offset + "px");
+
+    const targets = [...toc.querySelectorAll(".toc-item")]
+      .map(btn => document.getElementById(btn.dataset.target))
+      .filter(Boolean);
+    // 「まだ書いていない節」は複数の空項目が同じ的を指すので重複を1つにする
+    const uniq = [...new Set(targets)];
+    this._tocObserver = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        const btns = toc.querySelectorAll('.toc-item[data-target="' + en.target.id + '"]');
+        btns.forEach(b => b.classList.toggle("active", en.isIntersecting));
+      });
+    }, { rootMargin: "-" + offset + "px 0px -70% 0px", threshold: 0 });
+    uniq.forEach(el => this._tocObserver.observe(el));
+    return true;
+  }
+
+  get view() { return this.state.view || this.props.initialView || "top"; }
+  recs() { return (this.state.data && this.state.data.records) || []; }
+
+  // theme / component_types は v2 では文字列だが、配列で来ても壊れないようにする
+  asList(v) { return v === null || v === undefined || v === "" ? [] : (Array.isArray(v) ? v : [v]); }
+
+  // STATE §4「2つの棚」：棚は build が算出した shelf を使う。既定は本棚だけ
+  onShelf(r) { return this.state.archive ? true : (r.shelf || "main") === "main"; }
+
+  filtered() {
+    const p = this.state.purpose;
+    const t = this.state.theme;
+    const q = String(this.state.q || "").trim().toLowerCase();
+    return this.recs().filter(r => this.onShelf(r))
+      .filter(r => !p || r.purpose === p)
+      .filter(r => !t || r.theme === t)
+      .filter(r => !q || this.searchBlob(r).indexOf(q) >= 0);
+  }
+
+  // 件数も本棚だけで数える（§5 の成立条件は本棚のみで判定するため）。
+  // 2026-08-26・目的×テーマの2軸UI追加：もう一方の軸が選ばれていれば、
+  // そのかけ合わせの件数を出す（選ばれていなければ単独の件数のまま）。
+  // 3件未満・0件もそのままチップの数字に出す（STATE §5 の例外注記どおり、隠さない）
+  countFor(p) {
+    const t = this.state.theme;
+    return this.recs().filter(r => this.onShelf(r) && r.purpose === p && (!t || r.theme === t)).length;
+  }
+  countForTheme(t) {
+    const p = this.state.purpose;
+    return this.recs().filter(r => this.onShelf(r) && r.theme === t && (!p || r.purpose === p)).length;
+  }
+
+  // 検索窓（S3）：対象はタイトル（name/name_local）と summary（「何をしたか」節）のみ。
+  // 単純な部分一致。外部ライブラリは使わない
+  searchBlob(r) {
+    if (r._searchBlob) return r._searchBlob;
+    return r._searchBlob = [r.name, r.name_local, this.sec(r, "何をしたか")]
+      .filter(Boolean).join(" ").toLowerCase();
+  }
+
+  // 「今日の4件」（S3）：日付をシードにした疑似乱数で選ぶ。同じ日は同じ4件になる。
+  // FNV-1a で文字列を32bit整数にハッシュするだけの単純な方式（外部ライブラリなし）
+  fnv1a(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  todayRecords() {
+    const now = new Date();
+    const day = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    const pool = this.recs().filter(r => this.onShelf(r) && SECTIONS.every(name => this.sec(r, name)));
+    return pool.map(r => ({ r: r, k: this.fnv1a(day + "|" + r.id) }))
+      .sort((a, b) => a.k - b.k)
+      .slice(0, 4)
+      .map(x => x.r);
+  }
+
+  // 写真枠（S3・#6）。data.json に image を持つレコードは現時点で0件だが、
+  // 将来のためにフォールバック順位をここに実装しておく。
+  // 関連性確認済みフラグは data.json に存在しないため作らず、実体があれば
+  // すべて「参考画像」（未確認）として扱う（提案は完了報告で行う）
+  photoFrameFor(r) {
+    const img = r.image;
+    if (!img || !img.url) return { show: false };
+    // STATE §4「写真」：採用可能なのはクレジットが明記できる画像のみ。
+    // credit が無い画像は、クレジットを明示できないので出さない
+    if (!img.credit) return { show: false };
+    if (img.type === "map") return { show: true, url: img.url, badge: "参考地図", alt: r.name || "", credit: img.credit };
+    // 完成予想図（2026-08-26）。設計事務所や事業者が公表した CG である。
+    // **写真と同じ札にしない。** 建つ前の絵を「この場所の写真」と出すと読み手を誤らせる
+    // （STATE Values②）。AI生成画像は使わない（CLAUDE.md 絶対禁止#5）ので、
+    // ここに入れてよいのは出所と作者が言える設計上の図に限る
+    if (img.type === "rendering") return { show: true, url: img.url, badge: "完成予想図", alt: r.name || "", credit: img.credit };
+    if (img.type === "none") return { show: false };
+    // 関連性を誰が確かめたかで札を分ける（2026-08-26）。
+    // editor＝人が見て選んだ / ai＝Terroir が画像を見て選んだ / それ以外＝未確認。
+    // **どちらも「見て確かめた」ものだが、同じ札にはしない**（Values②「出所を隠さない」）
+    const by = img.relevance_confirmed === true ? img.confirmed_by : null;
+    const badge = by === "editor" ? "この場所の写真"
+      : by === "ai" ? "この場所の写真（機械で選定）"
+      : "参考画像";
+    return { show: true, url: img.url, badge: badge, alt: r.name || "", credit: img.credit };
+  }
+
+  // 一覧カード（INDEX）と「今日の4件」（TOP）が共有するカードの中身。
+  // テンプレート自体はINDEX側を触らないため別々に持つが、値の作り方はここ1か所にまとめる
+  cardFor(r) {
+    const latest = this.latestYear(r);
+    return {
+      name: r.name || "—",
+      nameLocal: r.name_local || "",
+      purpose: r.purpose || "—",
+      completeness: r.completeness === "full" ? "全5節" : "一部のみ",
+      srcCount: (r.sources || []).length,
+      meta: [r.country, r.region, r.municipality].filter(Boolean).join(" ／ "),
+      summary: this.sec(r, "何をしたか").replace(/\*\*|`/g, "") || "（未記入）",
+      span: r.start_year && latest
+        ? (r.start_year + "年 → " + latest + "年の報道まで（" + (latest - Number(r.start_year)) + "年後）")
+        : (latest ? ("開始年は確認できていません（最新の報道は " + latest + "年）") : ""),
+      followUp: r.follow_up || "—",
+      followBg: r.follow_up === "濃い" ? "var(--green)" : r.follow_up === "なし" ? "var(--ink)" : "var(--surface)",
+      followFg: (r.follow_up === "濃い" || r.follow_up === "なし") ? "var(--surface)" : "var(--ink)",
+      photo: this.photoFrameFor(r),
+      open: () => this.navigate("detail", r.id)
+    };
+  }
+
+  // 円の桁を日本語の読み方に寄せる。**丸めていることが分かる形にする**（「約」を付ける）
+  yen(n) {
+    if (n >= 1e12) return "約" + (n / 1e12).toFixed(1).replace(/\.0$/, "") + "兆円";
+    if (n >= 1e8) return "約" + (n / 1e8).toFixed(1).replace(/\.0$/, "") + "億円";
+    if (n >= 1e4) return "約" + Math.round(n / 1e4).toLocaleString("ja-JP") + "万円";
+    return "約" + Math.round(n).toLocaleString("ja-JP") + "円";
+  }
+
+  // 「いくらかかったか」に添える円換算。build が data.json に入れた cost_jpy を整えるだけで、
+  // ここで新しく換算はしない（レートの出所を1つに保つため）
+  // 関連する取り組み（2026-08-26 新設）。
+  // **`related_projects` は153件すべてで空**なので、フィールドは使わず軸の一致から出す。
+  // P3 が使えるかどうかを決めるのは「同じ目的か」と「近い規模か」なので、そこを重く見る。
+  // **並べるだけで、似ている理由を必ず添える**（なぜ出てきたのか読み手に分かるようにする）。
+  relatedTo(r) {
+    const pool = this.recs().filter(x => x.id !== r.id && this.onShelf(x));
+    const scored = pool.map(x => {
+      const why = [];
+      let score = 0;
+      if (x.purpose && x.purpose === r.purpose) { score += 3; why.push("同じ目的"); }
+      if (x.population_scale && x.population_scale === r.population_scale) { score += 2; why.push("近い規模"); }
+      if (x.theme && x.theme === r.theme) { score += 2; why.push("同じテーマ"); }
+      if (x.country && x.country === r.country) { score += 1; why.push("同じ国"); }
+      return { r: x, score: score, why: why };
+    }).filter(s => s.score >= 3);
+    scored.sort((a, b) => b.score - a.score || String(a.r.id).localeCompare(String(b.r.id)));
+    return scored.slice(0, 4).map(s => ({
+      name: s.r.name || "—",
+      meta: [s.r.country, s.r.region].filter(Boolean).join(" ／ "),
+      why: s.why.join("・"),
+      open: () => this.navigate("detail", s.r.id)
+    }));
+  }
+
+  costRows(r) {
+    return (r.cost_jpy || []).map(c => {
+      const years = c.jpy / P3_ANNUAL_BUDGET;
+      // P3 の年予算との比は、1年分に満たないものには出さない（「約0年分」は何も言っていない）
+      const scale = years >= 1
+        ? "（年200万円の予算なら約" + Math.round(years).toLocaleString("ja-JP") + "年分）"
+        : "";
+      return { raw: c.raw, yen: this.yen(c.jpy), scale: scale };
+    });
+  }
+
+  sec(r, name) {
+    const s = (r.sections || {})[name];
+    return typeof s === "string" ? s.trim() : "";
+  }
+
+  // 本文は Markdown で書かれている。**強調** と `コード` だけを組にして返す。
+  // 生の ** や ` が画面に出るのを防ぐのが目的で、Markdown 全部は解釈しない。
+  mdRuns(text) {
+    const out = [];
+    const re = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+    let last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push(this.run(text.slice(last, m.index), "plain"));
+      const tok = m[0];
+      out.push(tok.slice(0, 2) === "**"
+        ? this.run(tok.slice(2, -2), "bold")
+        : this.run(tok.slice(1, -1), "code"));
+      last = m.index + tok.length;
+    }
+    if (last < text.length) out.push(this.run(text.slice(last), "plain"));
+    return out.length ? out : [this.run(text, "plain")];
+  }
+
+  run(text, kind) {
+    if (kind === "bold") return { text: text, weight: "900", family: "inherit", size: "inherit", bg: "transparent", pad: "0" };
+    if (kind === "code") return { text: text, weight: "700", family: "ui-monospace,SFMono-Regular,Menlo,monospace", size: "0.88em", bg: "var(--wash)", pad: "1px 5px" };
+    return { text: text, weight: "500", family: "inherit", size: "inherit", bg: "transparent", pad: "0" };
+  }
+
+  paragraphs(text) {
+    return text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+      .map((p, i) => ({ gap: i === 0 ? "0" : "1.1em", runs: this.mdRuns(p) }));
+  }
+
+  // 出典は報道日の昇順。§1 の「縦」＝始まりから今までの並び。
+  sortedSources(r) {
+    return (r.sources || []).slice().sort((a, b) =>
+      String(a.published || "").localeCompare(String(b.published || "")));
+  }
+
+  latestYear(r) {
+    const ys = (r.sources || []).map(s => parseInt(String(s.published || "").slice(0, 4), 10))
+      .filter(y => Number.isFinite(y));
+    return ys.length ? Math.max.apply(null, ys) : null;
+  }
+
+  spanNote(r) {
+    const latest = this.latestYear(r);
+    if (latest === null) return "報道日が読める出典がありません。";
+    if (r.start_year === null || r.start_year === undefined) {
+      return "開始年が確認できていないため、何年後までの報道かは計算していません（最新の報道は " + latest + "年）。";
+    }
+    const gap = latest - Number(r.start_year);
+    return "開始（" + r.start_year + "年）から " + gap + "年後の報道まで確認しています。";
+  }
+
+  host(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } }
+
+  detail(r) {
+    const srcs = this.sortedSources(r);
+    const uf = r.unknown_fields || [];
+    const disc = r.discrepancies || [];
+    const ctx = r.context_sources || [];
+    const narrow = this.state.w < 720;
+
+    const emptyNames = SECTIONS.filter(name => !this.sec(r, name));
+
+    // anchorId は SECTIONS 内の位置で振る（filled/empty のどちらでも同じ番号が
+    // 出るように、絞り込む前の元のインデックスを使う）。目次（目次ナビ・S2相当）が
+    // これを頼りに scrollIntoView する
+    const fx = (this.state.data && this.state.data.fx) || null;
+    const costRows = this.costRows(r);
+
+    // ── 節を3つのまとまりに組み替える（2026-08-26） ──
+    // レコードの5節はそのまま。読ませ方だけを変えている（GROUPS のコメント参照）。
+    const groups = GROUPS.map(g => {
+      const items = g.members.filter(name => this.sec(r, name)).map(name => ({
+        label: name,
+        paras: this.paragraphs(this.sec(r, name)),
+        // 円換算は「いくらかかったか」にだけ添える
+        hasCost: name === COST_SECTION && costRows.length > 0,
+        costRows: name === COST_SECTION ? costRows : [],
+        costNote: fx
+          ? "本文の金額を " + fx.rate_date + " のレートで機械的に換算した目安です（出所：" + fx.source
+            + "）。本文そのものは出典どおりで、この換算は Terroir が添えたものです。"
+            + "支出した当時のレートではないため、年が離れているものほど実際とずれます。"
+          : "",
+      }));
+      const isKey = !!g.isKey;
+      return {
+        id: g.id, label: g.label, en: g.en, items: items, isKey: isKey,
+        // 「その後」のまとまりの冒頭に follow_up_note を置く（STATE §4）
+        hasFollowNote: g.id === "d-g-after" && !!String(r.follow_up_note || "").trim(),
+        followNote: String(r.follow_up_note || "").trim(),
+        // 節がいくつ入っているかで見出しを出し分ける（要約は3節を束ねるので小見出しが要る）
+        showItemLabels: g.members.length > 1,
+        bg: isKey ? "var(--wash)" : "var(--surface)",
+        border: isKey ? "4px solid var(--ink)" : "3px solid var(--ink)",
+        shadow: isKey ? "8px 8px 0 var(--ink)" : "none",
+        pad: isKey ? "26px 24px" : "22px",
+        titleSize: isKey ? "23px" : "19px",
+        bodySize: isKey ? "16.5px" : "15px",
+      };
+    }).filter(g => g.items.length > 0);
+
+    // ── 目次 ──
+    // 空のまとまりは消さず、灰色で「まだ書いていない節」の注記へ飛ばす（STATE Values②）。
+    // 節以外の行き先（わかっていること・出典・関連）も並べる
+    const related = this.relatedTo(r);
+    const toc = GROUPS.map(g => {
+      const filled = g.members.some(name => this.sec(r, name));
+      const target = filled ? g.id : EMPTY_NOTE_ID;
+      return {
+        label: g.label, empty: !filled,
+        cls: "toc-item" + (filled ? "" : " empty"), target: target,
+        jump: () => { const el = document.getElementById(target); if (el) el.scrollIntoView({ block: "start" }); }
+      };
+    }).concat(EXTRA_TOC.filter(x => x.id !== "d-related" || related.length).map(x => ({
+      label: x.label, empty: false, cls: "toc-item", target: x.id,
+      jump: () => { const el = document.getElementById(x.id); if (el) el.scrollIntoView({ block: "start" }); }
+    })));
+
+    // ── わかっていること（2026-08-26 簡素化） ──
+    // 13行あったが、国・地域を除く多くが上部のバッジ／メタ行と重複していた。
+    // 削ったのは 目的・テーマ・人口規模・出典本数（重複）と、終了年（153件中5件しか値が無い）。
+    // かかった費用は「いくらかかったか」節と重複するので、**節が空のときだけ**出す（実測5件）。
+    const hasCostSection = !!this.sec(r, COST_SECTION);
+    const period = r.start_year
+      ? (r.start_year + "年〜" + (r.end_year ? r.end_year + "年" : ""))
+      : "—";
+    const rows = [
+      { k: "場所", v: [r.country, r.region, r.municipality].filter(Boolean).join(" ／ ") || "—" },
+      { k: "人口", v: r.population_current
+          ? Number(r.population_current).toLocaleString("ja-JP") + "人（自治体全体・" + (r.population_scale || "—") + "）"
+          : (r.population_scale || "—") },
+      { k: "期間", v: period },
+      // §4：判定不能は欠損ではなく観測結果。他の値と同じ太さ・同じ色で出す。
+      { k: "今の状況", v: r.status_current || "—" },
+      { k: "担い手", v: [r.actor_type, r.lead_actor].filter(Boolean).join("／") || "—" },
+      { k: "ハード／ソフト", v: this.asList(r.component_types).map(t => HS_JA[t] || t).join(" ／ ") || "—" },
+    ].concat(hasCostSection ? [] : [{ k: "かかった費用", v: r.funding_scale || "—" }])
+    .map((x, i) => Object.assign({}, x, {
+      sep: i === 0 ? "0" : "1.5px solid rgba(20,23,15,0.14)",
+      weight: "700"
+    }));
+
+    const years = srcs.map(s => String(s.published || "").slice(0, 4)).filter(Boolean);
+    const uniqYears = years.filter((y, i) => years.indexOf(y) === i);
+
+    return {
+      purpose: r.purpose || "—",
+      theme: this.asList(r.theme).join(" ／ ") || "テーマ未設定",
+      populationScale: r.population_scale || "—",
+      name: r.name || "—",
+      nameLocal: r.name_local || "",
+      metaLine: [r.country, r.region, r.municipality].filter(Boolean).join(" ／ "),
+      // ── C案：要約＋長文 ─────────────────────────────
+      // 要約 ＝「何をしたか」、長文 ＝ 残り4節を見出しなしでつないだもの。
+      // 見出しを残すと比較にならないので、あえて落としている。
+      leadRuns: this.mdRuns(this.sec(r, SECTIONS[0]) || "（未記入）"),
+      proseParas: this.paragraphs(
+        SECTIONS.slice(1).map(n => this.sec(r, n)).filter(Boolean).join("\n\n")),
+      hasProse: SECTIONS.slice(1).some(n => this.sec(r, n)),
+      noProse: !SECTIONS.slice(1).some(n => this.sec(r, n)),
+
+      groups: groups,
+      toc: toc,
+      related: related,
+      hasRelated: related.length > 0,
+      // サイドバーに出す「要点」（本文を読みながら条件が見えるように）
+      side: [
+        { k: "場所", v: [r.country, r.region].filter(Boolean).join(" ／ ") || "—" },
+        { k: "規模", v: r.population_scale || "—" },
+        { k: "目的", v: r.purpose || "—" },
+        { k: "テーマ", v: this.asList(r.theme).join(" ／ ") || "—" },
+        { k: "開始年", v: r.start_year ? r.start_year + "年" : "—" },
+        { k: "今の状況", v: r.status_current || "—" },
+        { k: "出典", v: srcs.length + "本" },
+      ].map((x, i) => Object.assign({}, x, { sep: i === 0 ? "0" : "1.5px solid rgba(20,23,15,0.14)" })),
+      emptyNoteId: EMPTY_NOTE_ID,
+      hasEmptySections: emptyNames.length > 0,
+      emptySectionList: emptyNames.join(" / "),
+      emptySectionNote: "このレコードは stub です。出典は集めてありますが、これらの節はまだ書き起こしていません。"
+        + "「出典に書かれていなかった項目」とは別で、そちらは出典を読んだうえで確認できなかったものです。",
+      rows: rows,
+      rowCols: narrow ? "7.5em 1fr" : "9.5em 1fr",
+
+      noUnknown: uf.length === 0,
+      unknownFields: uf.map(f => ({ label: FIELD_JA[f] || f })),
+
+      hasDiscrepancies: disc.length > 0,
+      discrepancies: disc.map(g => ({
+        label: (FIELD_JA[g.field] || g.field) + " — 出典で値が違います",
+        cols: narrow ? "1fr" : "9em 1fr",
+        values: (g.values || []).map((v, i) => ({
+          value: String(v.value),
+          published: v.published ? v.published + " の報道" : "報道日不明",
+          url: v.source_url || "#",
+          host: this.host(v.source_url || ""),
+          sep: i === 0 ? "0" : "1.5px solid rgba(20,23,15,0.14)"
+        }))
+      })),
+
+      spanNote: this.spanNote(r),
+      singleOutlet: r.single_outlet === true,
+      singleOutletNote: "この事例は1社の報道にもとづきます（報道年：" + uniqYears.join(" / ") + "）",
+
+      // STATE §4「self_reported」：画面に明示することが収録の条件そのものになっている
+      // STATE §4「2つの棚」：記録棚のレコードは詳細の冒頭で明示する
+      isArchive: (r.shelf || "main") === "archive",
+      archiveNote: "この取り組みは、始まりの報道しか確認できていません"
+        + (r.recheck_year ? "（" + r.recheck_year + "年以降に再確認）" : "（再確認の年は開始年が不明なため出せません）"),
+
+      selfReported: r.self_reported === true,
+      selfReportedNote: "この事例は事業者の発信にもとづきます（" + srcs.length + "本のうち "
+        + srcs.filter(s => s.from_operator === true).length + "本が運営主体の発信）",
+      sources: srcs.map((s, i) => ({
+        n: "[" + (i + 1) + "]",
+        head: [s.outlet, s.published, LANG_JA[s.language] || s.language].filter(Boolean).join("　/　"),
+        title: s.title || "（表題なし）",
+        url: s.url || "#"
+      })),
+
+      hasContext: ctx.length > 0,
+      contextSources: ctx.map(c => ({ title: c.title || c.url, url: c.url || "#" })),
+
+      hasSpotcheck: !!r.spotcheck_note,
+      spotcheckNote: r.spotcheck_note || "",
+      lastVerified: r.last_verified || "—"
+    };
+  }
+
+  renderVals() {
+    const v = this.view;
+    const recs = this.recs();
+    const list = this.filtered();
+    const narrow = this.state.w < 980, mobile = this.state.w < 640;
+    const cur = this.state.id ? recs.filter(r => r.id === this.state.id)[0] : null;
+    const sel = this.state.purpose;
+    const selTheme = this.state.theme;
+
+    return {
+      headerCount: recs.length + "件",
+      // フッタ（2026-08-26）。断り書きは画面幅で1〜3列に落とす
+      footCols: this.state.w >= 900 ? "repeat(3,1fr)" : (this.state.w >= 600 ? "repeat(2,1fr)" : "1fr"),
+      verifiedNote: (() => {
+        const on = recs.filter(r => this.onShelf(r));
+        const src = on.reduce((n, r) => n + (r.sources || []).length, 0);
+        return on.length + "件・出典" + src + "本";
+      })(),
+      hasErr: !!this.state.err,
+      err: this.state.err || "",
+      isTop: v === "top", isList: v === "list", isDetail: v === "detail" && !!cur,
+      heroSize: mobile ? "30px" : "46px",
+      sectionSize: mobile ? "40px" : "58px",
+      purposeCols: mobile ? "1fr" : (narrow ? "repeat(2,1fr)" : "repeat(4,1fr)"),
+      cardCols: narrow ? "1fr" : "repeat(2,1fr)",
+
+      // 詳細画面の2段組（2026-08-26）。1080px 以上でサイドバーを出す。
+      // それ未満では1列に落とし、目次は従来どおり上の横並びに戻す
+      detailWrapW: this.state.w >= 1080 ? "1180px" : "900px",
+      detailCols: this.state.w >= 1080 ? "280px minmax(0,1fr)" : "minmax(0,1fr)",
+      mainCol: this.state.w >= 1080 ? "2" : "auto",
+      sideCol: this.state.w >= 1080 ? "1" : "auto",
+      showSidebar: this.state.w >= 1080 && this.state.mode !== "prose",
+      showTopToc: this.state.w < 1080 && this.state.mode !== "prose",
+      relatedCols: this.state.w >= 720 ? "repeat(2,1fr)" : "1fr",
+
+      isSections: this.state.mode !== "prose",
+      isProse: this.state.mode === "prose",
+      showEmptyNote: this.state.mode !== "prose" && !!(cur && SECTIONS.some(n => !this.sec(cur, n))),
+      modeSections: () => this.setState({ mode: "sections" }),
+      modeProse: () => this.setState({ mode: "prose" }),
+      secBg: this.state.mode !== "prose" ? "var(--ink)" : "var(--surface)",
+      secFg: this.state.mode !== "prose" ? "var(--bg)" : "var(--ink)",
+      proBg: this.state.mode === "prose" ? "var(--ink)" : "var(--surface)",
+      proFg: this.state.mode === "prose" ? "var(--bg)" : "var(--ink)",
+
+      goTop: () => this.navigate("top", null),
+      goList: () => this.navigate("list", null),
+      clearFilter: () => this.navigate("list", null, null),
+      allBg: sel ? "var(--surface)" : "var(--ink)",
+      allFg: sel ? "var(--ink)" : "var(--bg)",
+
+      // テーマの絞り込み（2026-08-26追加）。目的とかけ合わせ可能な2軸目
+      clearThemeFilter: () => this.navigate("list", null, undefined, null),
+      allThemeBg: selTheme ? "var(--surface)" : "var(--ink)",
+      allThemeFg: selTheme ? "var(--ink)" : "var(--bg)",
+
+      // ヘッダのTOP/INDEX（S3・#7）：1つのピルに同居していたのを2つの独立したボタンに分離し、
+      // 現在地をハイライトする。INDEXは一覧・詳細のどちらから見ていても点灯させる
+      // （詳細はINDEXから辿り着く画面であるため）
+      topBtnBg: v === "top" ? "var(--ink)" : "var(--surface)",
+      topBtnFg: v === "top" ? "var(--bg)" : "var(--ink)",
+      topBtnShadow: v === "top" ? "3px 3px 0 var(--ink)" : "none",
+      indexBtnBg: (v === "list" || v === "detail") ? "var(--ink)" : "var(--surface)",
+      indexBtnFg: (v === "list" || v === "detail") ? "var(--bg)" : "var(--ink)",
+      indexBtnShadow: (v === "list" || v === "detail") ? "3px 3px 0 var(--ink)" : "none",
+
+      // 検索窓（S3・#2・#9）：767px以下では入力欄を独立した行にして幅いっぱいに広げる
+      searchDir: this.state.w <= 767 ? "column" : "row",
+      searchBtnW: this.state.w <= 767 ? "100%" : "auto",
+      doSearch: () => {
+        const el = document.getElementById("top-search-input");
+        this.navigate("list", null, undefined, undefined, el ? el.value.trim() : "");
+      },
+      onSearchKeyDown: (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const el = document.getElementById("top-search-input");
+        this.navigate("list", null, undefined, undefined, el ? el.value.trim() : "");
+      },
+
+      purposes: PURPOSES.map((p, i) => {
+        const n = this.countFor(p);
+        const on = sel === p;
+        return {
+          label: p,
+          countLabel: n + "件",
+          chip: p + " " + n,
+          bg: on ? CHIP_BG[i % CHIP_BG.length] : "var(--surface)",
+          fg: on ? CHIP_FG[i % CHIP_FG.length] : "var(--ink)",
+          shadow: on ? "5px 5px 0 var(--ink)" : "3px 3px 0 var(--ink)",
+          pick: () => this.navigate("list", null, on ? null : p)
+        };
+      }),
+
+      // テーマのチップ（一覧画面の2軸目）。目的が選ばれていれば、そのかけ合わせの件数を表示する
+      themeChips: THEMES.map((t, i) => {
+        const n = this.countForTheme(t);
+        const on = selTheme === t;
+        const label = t.replace("（住宅・医療・福祉・子育て）", "");
+        return {
+          chip: label + " " + n,
+          bg: on ? CHIP_BG[i % CHIP_BG.length] : "var(--surface)",
+          fg: on ? CHIP_FG[i % CHIP_FG.length] : "var(--ink)",
+          shadow: on ? "5px 5px 0 var(--ink)" : "3px 3px 0 var(--ink)",
+          pick: () => this.navigate("list", null, undefined, on ? null : t)
+        };
+      }),
+
+      resultLine: (() => {
+        const parts = [];
+        if (sel) parts.push("目的「" + sel + "」");
+        if (selTheme) parts.push("テーマ「" + selTheme + "」");
+        return parts.length ? (parts.join("×") + "で絞り込み中 — " + list.length + "件") : (list.length + "件を表示しています");
+      })(),
+
+      // ── 途中経過（PROGRESS）。数字は data.json から毎回数え直す。手で書かない ──
+      // 数字カード4つは767px以下で2×2にする（S3・#9）
+      statsCols: this.state.w <= 767 ? "repeat(2,1fr)" : "repeat(4,1fr)",
+      themeLabelW: mobile ? "9.5em" : "13em",
+      stats: (() => {
+        const on = recs.filter(r => this.onShelf(r));
+        const countries = new Set(on.map(r => r.country).filter(Boolean)).size;
+        const notGoing = on.filter(r => ["終了", "縮小", "判定不能"].indexOf(r.status_current) >= 0).length;
+        const srcs = on.reduce((n, r) => n + (r.sources || []).length, 0);
+        return [
+          { num: String(on.length), label: "収録した取り組み", bg: "var(--ink)", fg: "var(--bg)" },
+          { num: String(countries), label: "国と地域", bg: "var(--green)", fg: "var(--on-accent)" },
+          { num: String(srcs), label: "たどった出典", bg: "var(--surface)", fg: "var(--ink)" },
+          { num: String(notGoing), label: "終わった・縮んだ・不明", bg: "var(--yellow)", fg: "var(--ink)" }
+        ];
+      })(),
+      themeBars: (() => {
+        const on = recs.filter(r => this.onShelf(r));
+        const counts = THEMES.map(t => on.filter(r => r.theme === t).length);
+        const max = Math.max(1, ...counts);
+        return THEMES.map((t, i) => ({
+          label: t.replace("（住宅・医療・福祉・子育て）", ""),
+          count: String(counts[i]),
+          width: Math.round(counts[i] / max * 100) + "%",
+          bg: CHIP_BG[i % CHIP_BG.length]
+        }));
+      })(),
+      gapLine: (() => {
+        const on = recs.filter(r => this.onShelf(r));
+        // 「空き家」は探して見つからないのではなく、意図して増やしていない枠なので
+        // 「薄い」の集計から外す（そう書かないと、読者に理由を取り違えさせる）
+        const CAPPED = "空き家・空き店舗・遊休不動産";
+        const counts = THEMES.filter(t => t !== CAPPED)
+          .map(t => ({ t, n: on.filter(r => r.theme === t).length }));
+        counts.sort((a, b) => a.n - b.n);
+        const thin = counts.slice(0, 2).map(c => "「" + c.t.replace("（住宅・医療・福祉・子育て）", "") + "」").join("と");
+        const byCountry = {};
+        on.forEach(r => { byCountry[r.country] = (byCountry[r.country] || 0) + 1; });
+        const top = Object.keys(byCountry).sort((a, b) => byCountry[b] - byCountry[a])[0];
+        return "少ないのは " + thin + " です。国では " + top + " が " + byCountry[top]
+          + "件でいちばん多く、ヨーロッパと日本に寄っています。"
+          + "アフリカ・南アジア・中東はまだ数えるほどしかありません。"
+          + "これは世界の実態ではなく、探し方と、その土地の記事がネットに残っているかの差です。"
+          + "なお「空き家・空き店舗」は、どの国でも建物の再生に事例が集まりすぎるため、"
+          + "意図して増やしていません。";
+      })(),
+
+      // STATE §4「2つの棚」（パッチ10）
+      toggleArchive: () => this.setState({ archive: !this.state.archive }),
+      archiveBg: this.state.archive ? "var(--ink)" : "var(--surface)",
+      archiveFg: this.state.archive ? "var(--surface)" : "var(--ink)",
+      shelfLine: (() => {
+        const all = this.recs();
+        const m = all.filter(r => (r.shelf || "main") === "main").length;
+        const a = all.length - m;
+        // S3・#8：記録棚が0件のときは「0件あります」を出さない
+        if (a === 0) return "本棚 " + m + "件を出しています。";
+        return this.state.archive
+          ? ("本棚 " + m + "件 ＋ 記録棚 " + a + "件を出しています。記録棚は、始まりの報道しか確認できていないものです")
+          : ("本棚 " + m + "件を出しています。記録棚（始まりの報道しか確認できていないもの）が " + a + "件あります");
+      })(),
+      noResult: list.length === 0,
+      emptyLine: (() => {
+        const parts = [];
+        if (sel) parts.push("目的「" + sel + "」");
+        if (selTheme) parts.push("テーマ「" + selTheme + "」");
+        return parts.length ? (parts.join("×") + "のレコードはまだ1件もありません。") : "まだ1件も収録されていません。";
+      })(),
+
+      cards: list.map(r => this.cardFor(r)),
+
+      // 今日の4件（S3・#4）。767px以下では1列
+      todayCards: this.todayRecords().map(r => this.cardFor(r)),
+      hasToday: this.todayRecords().length > 0,
+      todayCols: this.state.w <= 767 ? "1fr" : "repeat(2,1fr)",
+
+      d: cur ? this.detail(cur) : {}
+    };
+  }
+}
+
+</script>
+</body>
+</html>
