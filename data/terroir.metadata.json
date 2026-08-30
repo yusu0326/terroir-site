@@ -1,0 +1,153 @@
+{
+  "name": "Terroir",
+  "description": "世界のまちで行われた「まちに何かを仕掛けた取り組み」の記録。収録の条件は1つ——最新の出典が開始年から3年以上あとに書かれていること。",
+  "url": "https://yusu0326.github.io/terroir-site/",
+  "recordCount": 153,
+  "generatedAt": "2026-08-30T06:11:54.191Z",
+  "inLanguage": "ja",
+  "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "licenseName": "CC BY-SA 4.0",
+  "citationShort": "Terroir（2026-08-30取得）",
+  "citationLong": "Terroir「世界中の、まちを変えた取り組みを、始まりから今まで」https://yusu0326.github.io/terroir-site/（2026-08-30取得）. CC BY-SA 4.0.",
+  "caveats": [
+    "本文の数値・固有名詞は出典に当たって確かめているが、原データ（統計表など）まで遡って検算はしていない。",
+    "出典間で数字が食い違う場合、1つに丸めず discrepancies に並置している。CSV には含めていないので JSON を見ること。",
+    "出典から埋められなかった項目は unknown_fields に申告してあり、推測では埋めていない。",
+    "収録は「独立した一次報道が見つかるもの」に偏る。地味に立ち消えた取り組みは文献に残らないため拾えない。",
+    "写真はこのライセンスの対象外。それぞれの出典が権利を持つ。image_url を再利用する場合は各出典の条件に従うこと。"
+  ],
+  "columns": [
+    {
+      "name": "id",
+      "description": "レコードの識別子。ページのURLにも使う"
+    },
+    {
+      "name": "name",
+      "description": "見出し（日本語）"
+    },
+    {
+      "name": "name_local",
+      "description": "現地での名称"
+    },
+    {
+      "name": "country",
+      "description": "国"
+    },
+    {
+      "name": "region",
+      "description": "地域・州・県"
+    },
+    {
+      "name": "municipality",
+      "description": "自治体"
+    },
+    {
+      "name": "population_current",
+      "description": "人口（出典は context_sources 側にある）"
+    },
+    {
+      "name": "population_scale",
+      "description": "都市規模の区分（5万人未満／5万〜25万／25万超／不明）"
+    },
+    {
+      "name": "purpose",
+      "description": "目的（8種のうち1つ）"
+    },
+    {
+      "name": "theme",
+      "description": "テーマ（10種のうち1つ）"
+    },
+    {
+      "name": "start_year",
+      "description": "開始年。出典から確認できない場合は空"
+    },
+    {
+      "name": "end_year",
+      "description": "終了年。続いている場合は空"
+    },
+    {
+      "name": "status_current",
+      "description": "今どうなっているか（継続中／縮小／終了／判定不能）"
+    },
+    {
+      "name": "actor_type",
+      "description": "担い手の種類"
+    },
+    {
+      "name": "lead_actor",
+      "description": "中心になった主体"
+    },
+    {
+      "name": "component_types",
+      "description": "ハード／ソフト／両方"
+    },
+    {
+      "name": "components",
+      "description": "打ち手（｜区切り）"
+    },
+    {
+      "name": "latest_source_year",
+      "description": "最新の出典の年"
+    },
+    {
+      "name": "elapsed_years",
+      "description": "開始年から最新の出典までの年数"
+    },
+    {
+      "name": "follow_up",
+      "description": "その後の追跡の濃さ（濃い／薄い／なし）"
+    },
+    {
+      "name": "follow_up_note",
+      "description": "その後の要約"
+    },
+    {
+      "name": "single_outlet",
+      "description": "出典が単一の媒体か（true のとき画面にも明示している）"
+    },
+    {
+      "name": "self_reported",
+      "description": "運営主体の発信を含むか（true のとき画面にも明示している）"
+    },
+    {
+      "name": "source_count",
+      "description": "出典の本数"
+    },
+    {
+      "name": "source_urls",
+      "description": "出典のURL（｜区切り）"
+    },
+    {
+      "name": "unknown_fields",
+      "description": "出典から埋められなかった項目（｜区切り）。推測では埋めていない"
+    },
+    {
+      "name": "image_url",
+      "description": "写真のURL。**ライセンスは本文と別**"
+    },
+    {
+      "name": "image_credit",
+      "description": "写真のクレジット"
+    },
+    {
+      "name": "last_verified",
+      "description": "最終確認日"
+    },
+    {
+      "name": "url",
+      "description": "このレコードのページ"
+    }
+  ],
+  "distribution": [
+    {
+      "name": "terroir.csv",
+      "encodingFormat": "text/csv",
+      "contentUrl": "https://yusu0326.github.io/terroir-site/data/terroir.csv"
+    },
+    {
+      "name": "terroir.json",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://yusu0326.github.io/terroir-site/data/terroir.json"
+    }
+  ]
+}

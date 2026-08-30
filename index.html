@@ -315,11 +315,32 @@ button{font:inherit;color:inherit;}
 
       <div style="margin-top:20px;font-size:13px;font-weight:700;color:var(--fg-muted);">{{ resultLine }}</div>
 
-      <!-- 該当なし -->
+      <!-- 該当なし。**0件をただ突きつけて終わりにしない**（2026-08-29）。
+           目的×テーマは80の組み合わせのうち26が0件で、2軸を入れた時点から
+           読者がここに当たる確率はかなり高い。片方の軸だけ差し替えた行き先を、
+           **実際に返る件数つきで**出す（件数の無い候補を出すと、また0件に当たる）。
+           STATE §5 の「0件も隠さず出す」は動かしていない——件数は出したままで、
+           そこからの出口を足しただけである -->
       <sc-if value="{{ noResult }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:14px;background:var(--wash);border:3px dashed var(--ink);border-radius:28px;padding:34px 22px;text-align:center;">
-          <div style="font-size:20px;font-weight:900;">該当なし</div>
-          <div style="margin-top:8px;font-size:14px;font-weight:500;color:var(--fg-muted);line-height:1.9;">{{ emptyLine }}<br>収録が進めばここに出ます。</div>
+        <div style="margin-top:14px;background:var(--wash);border:3px dashed var(--ink);border-radius:28px;padding:30px 22px;">
+          <div style="font-size:20px;font-weight:900;text-align:center;">該当なし</div>
+          <div style="margin-top:8px;font-size:14px;font-weight:500;color:var(--fg-muted);line-height:1.9;text-align:center;">{{ emptyLine }}<br>収録が進めばここに出ます。</div>
+
+          <sc-if value="{{ hasAlts }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:24px;padding-top:20px;border-top:2px dashed rgba(20,23,15,0.25);">
+              <div style="font-size:14px;font-weight:900;">近いところなら、あります</div>
+              <sc-for list="{{ altGroups }}" as="g" hint-placeholder-count="2">
+                <div style="margin-top:14px;">
+                  <div style="font-size:12.5px;font-weight:700;color:var(--fg-muted);">{{ g.label }}</div>
+                  <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">
+                    <sc-for list="{{ g.items }}" as="a" hint-placeholder-count="4">
+                      <button onClick="{{ a.go }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;background:var(--surface);color:var(--ink);box-shadow:2px 2px 0 var(--ink);" style-hover="transform:translate(-1px,-1px)">{{ a.label }} {{ a.count }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -718,8 +739,9 @@ button{font:inherit;color:inherit;}
     </div>
     <!-- 静的ページへの入口（2026-08-29）。**ここが唯一の <a href> のクロール導線である。**
          一覧のカードは <button> なので、クローラはこの1本からしか153件に辿り着けない -->
-    <div style="margin-top:12px;font-size:12px;font-weight:700;">
+    <div style="margin-top:12px;font-size:12px;font-weight:700;display:flex;gap:16px;flex-wrap:wrap;">
       <a href="./p/" style="color:var(--green-deep);">すべての記録を一覧で見る（{{ headerCount }}・JavaScript なしで読めます）</a>
+      <a href="./data/" style="color:var(--green-deep);">データをダウンロードする（CSV／JSON）</a>
     </div>
   </div>
 
@@ -1036,6 +1058,49 @@ class Component extends DCLogic {
     const q = String(this.state.q || "").trim();
     if (q) out.push({ label: "ことば「" + q + "」", clear: () => this.navigate("list", null, undefined, undefined, undefined, "") });
     return out;
+  }
+
+  /** 0件のときの行き先（2026-08-29）。**1軸だけ差し替えた候補を、件数つきで出す。**
+   *  件数は countFor / countForTheme をそのまま使う——どちらも「自分以外の
+   *  絞り込みを全部掛けた後の数」なので、ここに出た数字を押せば必ずその件数が返る。
+   *  0件の候補は出さない（押してまた0件に当たると、出す意味が無い）。 */
+  alternatives() {
+    const groups = [];
+    const q = String(this.state.q || "").trim();
+
+    // 検索語が犯人のことがある。**語を外した場合に何件になるかを先に見せる**
+    if (q) {
+      const withoutQ = this.recs().filter(r => this.onShelf(r)
+        && (!this.state.purpose || r.purpose === this.state.purpose)
+        && (!this.state.theme || r.theme === this.state.theme)
+        && (!this.state.country || r.country === this.state.country)).length;
+      if (withoutQ > 0) groups.push({
+        label: "ことば「" + q + "」を外すと",
+        items: [{ label: "この条件のまま", count: withoutQ + "件",
+          go: () => this.navigate("list", null, undefined, undefined, undefined, "") }]
+      });
+    }
+
+    // 目的を保ったままテーマを替える
+    if (this.state.purpose) {
+      const items = THEMES.filter(t => t !== this.state.theme)
+        .map(t => ({ t: t, n: this.countWith(r => r.theme === t && r.purpose === this.state.purpose) }))
+        .filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 6)
+        .map(x => ({ label: x.t.replace("（住宅・医療・福祉・子育て）", ""), count: x.n + "件",
+          go: () => this.navigate("list", null, undefined, x.t) }));
+      if (items.length) groups.push({ label: "「" + this.state.purpose + "」の、ほかのテーマ", items: items });
+    }
+
+    // テーマを保ったまま目的を替える
+    if (this.state.theme) {
+      const items = PURPOSES.filter(p => p !== this.state.purpose)
+        .map(p => ({ p: p, n: this.countWith(r => r.purpose === p && r.theme === this.state.theme) }))
+        .filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 6)
+        .map(x => ({ label: x.p, count: x.n + "件",
+          go: () => this.navigate("list", null, x.p) }));
+      if (items.length) groups.push({ label: "「" + this.state.theme.replace("（住宅・医療・福祉・子育て）", "") + "」の、ほかの目的", items: items });
+    }
+    return groups;
   }
 
   // 検索窓（S3）：対象はタイトル（name/name_local）と summary（「何をしたか」節）のみ。
@@ -1613,6 +1678,8 @@ class Component extends DCLogic {
           : ("本棚 " + m + "件を出しています。記録棚（始まりの報道しか確認できていないもの）が " + a + "件あります");
       })(),
       noResult: list.length === 0,
+      altGroups: list.length === 0 ? this.alternatives() : [],
+      hasAlts: list.length === 0 && this.alternatives().length > 0,
       emptyLine: (() => {
         const parts = this.filterParts();
         return parts.length ? (parts.map(f => f.label).join(" × ") + "のレコードはまだ1件もありません。") : "まだ1件も収録されていません。";

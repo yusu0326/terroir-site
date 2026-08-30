@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>データをダウンロードする — Terroir</title>
+<meta name="description" content="Terroir の153件を CSV と JSON で配布しています。CC BY-SA 4.0。">
+<link rel="canonical" href="https://yusu0326.github.io/terroir-site/data/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Terroir","description":"世界のまちで行われた「まちに何かを仕掛けた取り組み」の記録。収録の条件は1つ——最新の出典が開始年から3年以上あとに書かれていること。","url":"https://yusu0326.github.io/terroir-site/data/","license":"https://creativecommons.org/licenses/by-sa/4.0/","inLanguage":"ja","isAccessibleForFree":true,"creator":{"@type":"Organization","name":"Terroir"},"distribution":[{"@type":"DataDownload","encodingFormat":"text/csv","contentUrl":"https://yusu0326.github.io/terroir-site/data/terroir.csv"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://yusu0326.github.io/terroir-site/data/terroir.json"}]}</script>
+<style>
+:root{--bg:#EFEDDC;--ink:#14170F;--surface:#fff;--muted:#5E6355;--green:#2C7440;--wash:#FDF3D3}
+@media(prefers-color-scheme:dark){:root{--bg:#181A13;--ink:#EDEDE5;--surface:#22241B;--muted:#A7AB99;--green:#7ED895;--wash:#2C2E22}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.9}
+main{max-width:46em;margin:0 auto;padding:24px 20px 64px}
+a{color:var(--green)}
+h1{font-size:1.6rem;line-height:1.45}
+h2{font-size:1.1rem;margin-top:2em;padding-left:.5em;border-left:5px solid var(--green)}
+.dl{display:inline-block;border:2.5px solid var(--ink);border-radius:99px;padding:10px 20px;margin:0 8px 8px 0;font-weight:700;text-decoration:none;background:var(--wash);color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+td{border-top:1px solid var(--muted);padding:6px 8px;vertical-align:top}
+code{background:var(--wash);padding:1px 5px;border-radius:4px}
+.box{background:var(--surface);border:2px solid var(--ink);border-radius:16px;padding:14px 18px;margin:1.4em 0}
+li{margin:.5em 0}
+</style>
+</head>
+<body>
+<main>
+<p><a href="https://yusu0326.github.io/terroir-site/">Terroir</a> ／ <a href="https://yusu0326.github.io/terroir-site/p/">すべての記録</a></p>
+<h1>データをダウンロードする</h1>
+<p>収録している <strong>153件</strong>を、そのまま使える形で置いています。登録も申請も要りません。</p>
+<p>
+<a class="dl" href="./terroir.csv" download>CSV（表計算で開く）</a>
+<a class="dl" href="./terroir.json" download>JSON</a>
+<a class="dl" href="./terroir.metadata.json">メタデータ</a>
+</p>
+<div class="box">
+<p><strong>使ってよい条件。</strong>本文とデータは <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license noopener">CC BY-SA 4.0</a> です。出所を書けば自由に使えます。二次利用したものも同じ条件で公開してください。</p>
+<p><strong>写真は対象外です。</strong>それぞれの出典が権利を持ちます。<code>image_url</code> を使う場合は、各出典の条件に従ってください。</p>
+<p><strong>引用の書き方：</strong><br><code>Terroir「世界中の、まちを変えた取り組みを、始まりから今まで」https://yusu0326.github.io/terroir-site/（2026-08-30取得）. CC BY-SA 4.0.</code></p>
+</div>
+<h2>先に知っておいてほしいこと</h2>
+<ul>
+<li>本文の数値・固有名詞は出典に当たって確かめているが、原データ（統計表など）まで遡って検算はしていない。</li>
+<li>出典間で数字が食い違う場合、1つに丸めず discrepancies に並置している。CSV には含めていないので JSON を見ること。</li>
+<li>出典から埋められなかった項目は unknown_fields に申告してあり、推測では埋めていない。</li>
+<li>収録は「独立した一次報道が見つかるもの」に偏る。地味に立ち消えた取り組みは文献に残らないため拾えない。</li>
+<li>写真はこのライセンスの対象外。それぞれの出典が権利を持つ。image_url を再利用する場合は各出典の条件に従うこと。</li>
+</ul>
+<h2>CSV の列</h2>
+<p>食い違いの並置（<code>discrepancies</code>）と年表（<code>timeline</code>）は入れ子なので CSV には入っていません。JSON を見てください。</p>
+<table><tbody>
+<tr><td><code>id</code></td><td>レコードの識別子。ページのURLにも使う</td></tr>
+<tr><td><code>name</code></td><td>見出し（日本語）</td></tr>
+<tr><td><code>name_local</code></td><td>現地での名称</td></tr>
+<tr><td><code>country</code></td><td>国</td></tr>
+<tr><td><code>region</code></td><td>地域・州・県</td></tr>
+<tr><td><code>municipality</code></td><td>自治体</td></tr>
+<tr><td><code>population_current</code></td><td>人口（出典は context_sources 側にある）</td></tr>
+<tr><td><code>population_scale</code></td><td>都市規模の区分（5万人未満／5万〜25万／25万超／不明）</td></tr>
+<tr><td><code>purpose</code></td><td>目的（8種のうち1つ）</td></tr>
+<tr><td><code>theme</code></td><td>テーマ（10種のうち1つ）</td></tr>
+<tr><td><code>start_year</code></td><td>開始年。出典から確認できない場合は空</td></tr>
+<tr><td><code>end_year</code></td><td>終了年。続いている場合は空</td></tr>
+<tr><td><code>status_current</code></td><td>今どうなっているか（継続中／縮小／終了／判定不能）</td></tr>
+<tr><td><code>actor_type</code></td><td>担い手の種類</td></tr>
+<tr><td><code>lead_actor</code></td><td>中心になった主体</td></tr>
+<tr><td><code>component_types</code></td><td>ハード／ソフト／両方</td></tr>
+<tr><td><code>components</code></td><td>打ち手（｜区切り）</td></tr>
+<tr><td><code>latest_source_year</code></td><td>最新の出典の年</td></tr>
+<tr><td><code>elapsed_years</code></td><td>開始年から最新の出典までの年数</td></tr>
+<tr><td><code>follow_up</code></td><td>その後の追跡の濃さ（濃い／薄い／なし）</td></tr>
+<tr><td><code>follow_up_note</code></td><td>その後の要約</td></tr>
+<tr><td><code>single_outlet</code></td><td>出典が単一の媒体か（true のとき画面にも明示している）</td></tr>
+<tr><td><code>self_reported</code></td><td>運営主体の発信を含むか（true のとき画面にも明示している）</td></tr>
+<tr><td><code>source_count</code></td><td>出典の本数</td></tr>
+<tr><td><code>source_urls</code></td><td>出典のURL（｜区切り）</td></tr>
+<tr><td><code>unknown_fields</code></td><td>出典から埋められなかった項目（｜区切り）。推測では埋めていない</td></tr>
+<tr><td><code>image_url</code></td><td>写真のURL。**ライセンスは本文と別**</td></tr>
+<tr><td><code>image_credit</code></td><td>写真のクレジット</td></tr>
+<tr><td><code>last_verified</code></td><td>最終確認日</td></tr>
+<tr><td><code>url</code></td><td>このレコードのページ</td></tr>
+</tbody></table>
+</main>
+</body>
+</html>
