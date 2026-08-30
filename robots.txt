@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://yusu0326.github.io/terroir-site/sitemap.xml

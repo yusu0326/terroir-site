@@ -139,7 +139,7 @@ button{font:inherit;color:inherit;}
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
           <div style="font-family:var(--font-display);font-size:22px;">PURPOSE</div>
           <div style="font-size:15px;font-weight:900;">目的から選ぶ</div>
-          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">絞り込みはこの1軸だけです（0件のものも出しています）</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">一覧でテーマ・ことばとかけ合わせられます（0件のものも出しています）</div>
         </div>
         <div style="margin-top:18px;display:grid;grid-template-columns:{{ purposeCols }};gap:12px;">
           <sc-for list="{{ purposes }}" as="p" hint-placeholder-count="8">
@@ -253,7 +253,7 @@ button{font:inherit;color:inherit;}
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
           <div style="font-family:var(--font-display);font-size:19px;">PURPOSE</div>
           <div style="font-size:14.5px;font-weight:900;">目的で絞る</div>
-          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">下のテーマとかけ合わせられます。規模・国・検索での絞り込みは置いていません</div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">下のテーマ・ことばとかけ合わせられます。規模での絞り込みは置いていません</div>
         </div>
         <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
           <button onClick="{{ clearFilter }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ allBg }};color:{{ allFg }};">すべて {{ headerCount }}</button>
@@ -279,11 +279,39 @@ button{font:inherit;color:inherit;}
           </div>
         </div>
 
+        <!-- 検索（2026-08-29 新設）。`?q=` は以前から効いていたが、一覧に入力欄が無く
+             件数表示にも語が出ないため、**なぜこの件数なのかが画面から分からなかった。**
+             絞り込みの3つ目の条件として、目的・テーマと同じ場所に置く -->
+        <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(20,23,15,0.2);">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+            <div style="font-family:var(--font-display);font-size:19px;">SEARCH</div>
+            <div style="font-size:14.5px;font-weight:900;">ことばで絞る</div>
+            <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">見出し・現地での名称・「何をしたか」から探します</div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-direction:{{ searchDir }};">
+            <input id="list-search-input" type="text" value="{{ qValue }}" placeholder="まちの名前、取り組みの内容で探す" onKeyDown="{{ onListSearchKeyDown }}"
+                   style="flex:1;min-width:0;width:100%;font:inherit;font-size:14px;font-weight:700;padding:10px 16px;border:2.5px solid var(--ink);border-radius:999px;background:var(--surface);color:var(--ink);">
+            <button onClick="{{ doListSearch }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:10px 22px;font-size:13.5px;font-weight:900;background:var(--ink);color:var(--bg);width:{{ searchBtnW }};">検索</button>
+          </div>
+        </div>
+
         <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(20,23,15,0.2);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
           <button onClick="{{ toggleArchive }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;background:{{ archiveBg }};color:{{ archiveFg }};">記録棚も見る</button>
           <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">{{ shelfLine }}</div>
         </div>
       </div>
+
+      <!-- いま効いている絞り込みを1行にまとめ、1つずつ外せるようにする（2026-08-29）。
+           地球儀から来た国の絞り込みは、チップの行を持たないのでここでしか外せない -->
+      <sc-if value="{{ hasAnyFilter }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div style="font-size:12.5px;font-weight:700;color:var(--fg-muted);">絞り込み中</div>
+          <sc-for list="{{ activeFilters }}" as="f" hint-placeholder-count="2">
+            <button onClick="{{ f.clear }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;background:var(--wash);color:var(--ink);">{{ f.label }} ✕</button>
+          </sc-for>
+          <button onClick="{{ clearAllFilters }}" style="cursor:pointer;border:2.5px solid var(--ink);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;background:var(--ink);color:var(--bg);">すべて外す</button>
+        </div>
+      </sc-if>
 
       <div style="margin-top:20px;font-size:13px;font-weight:700;color:var(--fg-muted);">{{ resultLine }}</div>
 
@@ -338,6 +366,25 @@ button{font:inherit;color:inherit;}
         <div style="margin-top:4px;font-size:15px;font-weight:700;color:var(--fg-muted);">{{ d.nameLocal }}</div>
         <div style="margin-top:6px;font-size:13.5px;font-weight:500;color:var(--fg-muted);">{{ d.metaLine }}</div>
       </div>
+
+      <!-- 写真（2026-08-29 新設）。一覧のカードは `<button>` なので中にリンクを置けない
+           （入れ子の対話要素は不正なHTMLになる）。**写真から元記事へ辿る導線は、
+           ここ＝詳細ページが受け持つ。** フッタの「元の記事へ辿れるようにしています」は
+           これまで実装が無く、書いてあることと動きが食い違っていた -->
+      <sc-if value="{{ d.photo.show }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:16px;border:3px solid var(--ink);border-radius:26px;overflow:hidden;background:var(--surface);">
+          <div style="position:relative;aspect-ratio:16/9;">
+            <img src="{{ d.photo.url }}" alt="{{ d.photo.alt }}" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.parentElement.style.display='none'">
+            <div style="position:absolute;left:12px;bottom:12px;font-size:11.5px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;background:var(--surface);">{{ d.photo.badge }}</div>
+          </div>
+          <div style="border-top:3px solid var(--ink);padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;">
+            <div style="font-size:12.5px;font-weight:700;">© {{ d.photo.credit }}</div>
+            <sc-if value="{{ d.photo.hasSource }}" hint-placeholder-val="{{ false }}">
+              <a href="{{ d.photo.sourceUrl }}" target="_blank" rel="noopener" style="font-size:12.5px;font-weight:700;color:var(--green-deep);">この写真が載っている記事をひらく</a>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
 
       <!-- 目次（狭い画面のときだけ横に出す。広い画面では下のサイドバーが受け持つ） -->
       <sc-if value="{{ showTopToc }}" hint-placeholder-val="{{ false }}">
@@ -558,6 +605,25 @@ button{font:inherit;color:inherit;}
         <div style="margin-top:12px;font-size:12.5px;font-weight:700;color:var(--fg-muted);">最終確認日 {{ d.lastVerified }}</div>
       </div>
 
+      <!-- 訂正申立（2026-08-29 新設・法務要件）。docs/limitations.md:127 は
+           「レコードごとに導線を置き、受付から対応までの手順を公開する」ことを求めている。
+           **公開済みなのに受け口が文言だけだった状態を解消する。** -->
+      <div style="margin-top:16px;border:3px solid var(--ink);border-radius:26px;background:var(--surface);padding:20px;">
+        <div style="font-size:16px;font-weight:900;">この記述は間違っていますか</div>
+        <div style="margin-top:6px;font-size:13.5px;font-weight:500;color:var(--fg-muted);line-height:1.9;">
+          出典の読み違い・古くなった記述・関係者しか知りえない事実——どれでも申し立てられます。
+          <strong style="color:var(--ink);">受け取ってから2週間以内に、直すか直さないかを返します。</strong>
+          直した場合は、何をどう直したかをその記事に残します。
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="{{ d.correctionUrl }}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:2.5px solid var(--ink);border-radius:999px;padding:9px 18px;font-size:13.5px;font-weight:900;background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink);">この記述について訂正を申し立てる</a>
+          <a href="{{ correctionLog }}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:2.5px solid var(--ink);border-radius:999px;padding:9px 18px;font-size:13.5px;font-weight:700;background:var(--surface);color:var(--ink);">これまでの訂正を見る</a>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
+          いまの受付は GitHub の課題票です（アカウントが要ります）。メールでの窓口 corrections@terroir.wiki は、ドメインの登録が済み次第ひらきます。
+        </div>
+      </div>
+
       <!-- 関連する取り組み（2026-08-26 新設）。
            `related_projects` は153件すべて空なので、目的・規模・テーマ・国の一致から出す。
            **なぜ出てきたのかを必ず添える**（並べただけだと読み手が理由を推測してしまう） -->
@@ -636,18 +702,24 @@ button{font:inherit;color:inherit;}
           それぞれの出典が持つもので、撮影・掲載元を各写真に添え、元の記事へ辿れるようにしています。
         </div>
       </div>
-      <div style="border:2px dashed var(--ink);border-radius:16px;padding:12px 14px;">
+      <div style="border:2px solid var(--ink);border-radius:16px;padding:12px 14px;">
         <div style="font-size:12px;font-weight:900;">間違いを見つけたら</div>
         <div style="margin-top:5px;font-size:12px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
-          訂正の申し立て先は <strong style="color:var(--ink);">corrections@terroir.wiki</strong> に決まりましたが、
-          ドメイン未登録のため<strong style="color:var(--ink);">まだ有効ではありません</strong>。
-          それまでは、各記事に載せた出典の URL を確かめてください。
+          各記事の末尾に<strong style="color:var(--ink);">「この記述について訂正を申し立てる」</strong>を置いています。
+          受け取ってから<strong style="color:var(--ink);">2週間以内</strong>に、直すか直さないかを返します。
+          <a href="{{ correctionLog }}" target="_blank" rel="noopener" style="color:var(--green-deep);font-weight:700;">これまでの訂正</a>も見られます。
+          メールの窓口 corrections@terroir.wiki はドメイン登録後にひらきます。
         </div>
       </div>
     </div>
     <div style="margin-top:16px;font-size:11.5px;font-weight:500;color:var(--fg-muted);line-height:1.8;">
       引用は原文15語未満・1記事1回に留め、全訳や記事写真の転載はしていません。
       本文の数値・固有名詞は出典に当たって確かめています（{{ verifiedNote }}）。
+    </div>
+    <!-- 静的ページへの入口（2026-08-29）。**ここが唯一の <a href> のクロール導線である。**
+         一覧のカードは <button> なので、クローラはこの1本からしか153件に辿り着けない -->
+    <div style="margin-top:12px;font-size:12px;font-weight:700;">
+      <a href="./p/" style="color:var(--green-deep);">すべての記録を一覧で見る（{{ headerCount }}・JavaScript なしで読めます）</a>
     </div>
   </div>
 
@@ -742,6 +814,15 @@ const FIELD_JA = {
 const LANG_JA = { nl: "オランダ語", en: "英語", ja: "日本語", de: "ドイツ語", pt: "ポルトガル語",
   vi: "ベトナム語", it: "イタリア語", da: "デンマーク語", fy: "西フリジア語" };
 
+// 訂正申立の受け口（2026-08-29）。
+// **窓口は `corrections@terroir.wiki` に決まっているが、ドメインが未登録で稼働していない。**
+// 公開済みのサイトに受け口が1つも無い状態を続けないため、当面は公開リポジトリの
+// GitHub Issues を受け口にする。ドメインが有効になったら、ここを差し替えるだけでよい。
+const SITE_BASE = "https://yusu0326.github.io/terroir-site/";
+const CORRECTION_NEW_ISSUE = "https://github.com/yusu0326/terroir-site/issues/new";
+const CORRECTION_LOG = "https://github.com/yusu0326/terroir-site/issues?q=" +
+  encodeURIComponent('label:"訂正申立"');
+
 const CHIP_BG = ["var(--green)", "var(--yellow)", "var(--red)", "var(--olive)"];
 const CHIP_FG = ["var(--on-accent)", "var(--ink)", "var(--on-accent)", "var(--ink)"];
 
@@ -749,7 +830,10 @@ const HS_JA = { hard: "ハード", soft: "ソフト", hybrid: "両方" };
 
 class Component extends DCLogic {
   // mode は表示形式の比較用。"sections"（現行）/ "prose"（C案）
-  state = { data: null, err: null, view: null, id: null, purpose: null, theme: null, q: null, w: 1200, mode: "sections", archive: false };
+  // country は地球儀のクリックからだけ入る（チップの行は持たない）。
+  // 目的・テーマのように browsable な3軸目にはしていない——STATE §5 の成立条件は
+  // 2軸までしか保証していないため。**地球儀の案内文どおりに動かすための経路**である
+  state = { data: null, err: null, view: null, id: null, purpose: null, theme: null, country: null, q: null, w: 1200, mode: "sections", archive: false };
 
   componentDidMount() {
     // 取得口は head の window.terroirData()（globe.js と共有。二重取得を止めるため）
@@ -771,6 +855,21 @@ class Component extends DCLogic {
       if (this.parseHash().view === "detail") window.scrollTo(0, 0);
     };
     window.addEventListener("popstate", this._onPopState);
+
+    // 地球儀の点のクリック（2026-08-29 接続）。
+    // globe.js は以前から `terroir-globe-select` を投げていたが**受け手が居らず、
+    // 点を押してもキャプションが変わるだけだった。** 画面には
+    // 「点をクリックすると、その場所の取り組みが出ます」と書いてあるので、
+    // 案内文どおりに動かす。1件ならその記事へ、複数ならその国で絞った一覧へ
+    this._onGlobeSelect = (e) => {
+      const det = (e && e.detail) || {};
+      const ids = det.ids || [];
+      if (ids.length === 1) { this.navigate("detail", ids[0]); return; }
+      if (!det.label) return;
+      this.navigate("list", null, null, null, det.label, "");
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("terroir-globe-select", this._onGlobeSelect);
   }
   componentDidUpdate() {
     // 詳細を「5節構成」で見ているときだけ目次のobserverを持つ。
@@ -795,6 +894,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     window.removeEventListener("resize", this._onResize);
     window.removeEventListener("popstate", this._onPopState);
+    window.removeEventListener("terroir-globe-select", this._onGlobeSelect);
     if (this._tocObserver) this._tocObserver.disconnect();
   }
 
@@ -807,19 +907,20 @@ class Component extends DCLogic {
   parseHash() {
     const h = location.hash;
     let m;
-    if ((m = /^#detail\/(.+)$/.exec(h))) return { view: "detail", id: decodeURIComponent(m[1]), purpose: null, theme: null, q: null };
+    if ((m = /^#detail\/(.+)$/.exec(h))) return { view: "detail", id: decodeURIComponent(m[1]), purpose: null, theme: null, country: null, q: null };
     if ((m = /^#list(?:\/([^?]+))?(\?.*)?$/.exec(h))) {
       const sp = new URLSearchParams(m[2] || "");
-      return { view: "list", id: null, purpose: m[1] ? decodeURIComponent(m[1]) : null, theme: sp.get("theme") || null, q: sp.get("q") || null };
+      return { view: "list", id: null, purpose: m[1] ? decodeURIComponent(m[1]) : null, theme: sp.get("theme") || null, country: sp.get("country") || null, q: sp.get("q") || null };
     }
-    return { view: "top", id: null, purpose: null, theme: null, q: null };
+    return { view: "top", id: null, purpose: null, theme: null, country: null, q: null };
   }
-  hashFor(view, id, purpose, theme, q) {
+  hashFor(view, id, purpose, theme, country, q) {
     if (view === "detail" && id) return "#detail/" + encodeURIComponent(id);
     if (view === "list") {
       let h = purpose ? "#list/" + encodeURIComponent(purpose) : "#list";
       const sp = new URLSearchParams();
       if (theme) sp.set("theme", theme);
+      if (country) sp.set("country", country);
       if (q) sp.set("q", q);
       const qs = sp.toString();
       if (qs) h += "?" + qs;
@@ -830,15 +931,16 @@ class Component extends DCLogic {
   // クリックからの遷移はここを通す。URLを進め、詳細を開くときだけ
   // 先頭にスクロールを戻す（一覧・TOPへ戻るときは戻していない。元のスクロール位置の
   // ままにしている。他方のUIの closeDetail と同じ扱い）
-  navigate(view, id, purpose, theme, q) {
-    // purpose・theme・q を渡さなかった呼び出し（goTop/goList/open等）は今の状態を保つ。
+  navigate(view, id, purpose, theme, country, q) {
+    // purpose・theme・country・q を渡さなかった呼び出し（goTop/goList/open等）は今の状態を保つ。
     // setState に渡す値とURLに刻む値を同じ1つの変数からそろえないと、
     // 「フィルタを保ったままTOPと一覧を行き来する」ときにURLだけがズレる
     const effPurpose = purpose === undefined ? this.state.purpose : purpose;
     const effTheme = theme === undefined ? this.state.theme : theme;
+    const effCountry = country === undefined ? this.state.country : country;
     const effQ = q === undefined ? this.state.q : (q || null);
-    this.setState({ view: view, id: id || null, purpose: effPurpose, theme: effTheme, q: effQ });
-    try { history.pushState({ view: view, id: id || null }, "", this.hashFor(view, id, effPurpose, effTheme, effQ)); } catch (e) { }
+    this.setState({ view: view, id: id || null, purpose: effPurpose, theme: effTheme, country: effCountry, q: effQ });
+    try { history.pushState({ view: view, id: id || null }, "", this.hashFor(view, id, effPurpose, effTheme, effCountry, effQ)); } catch (e) { }
     if (view === "detail") window.scrollTo(0, 0);
   }
 
@@ -890,10 +992,12 @@ class Component extends DCLogic {
   filtered() {
     const p = this.state.purpose;
     const t = this.state.theme;
+    const c = this.state.country;
     const q = String(this.state.q || "").trim().toLowerCase();
     return this.recs().filter(r => this.onShelf(r))
       .filter(r => !p || r.purpose === p)
       .filter(r => !t || r.theme === t)
+      .filter(r => !c || r.country === c)
       .filter(r => !q || this.searchBlob(r).indexOf(q) >= 0);
   }
 
@@ -901,13 +1005,37 @@ class Component extends DCLogic {
   // 2026-08-26・目的×テーマの2軸UI追加：もう一方の軸が選ばれていれば、
   // そのかけ合わせの件数を出す（選ばれていなければ単独の件数のまま）。
   // 3件未満・0件もそのままチップの数字に出す（STATE §5 の例外注記どおり、隠さない）
+  // チップの数字は「それを押したときに実際に返る件数」でなければ意味がないので、
+  // 自分以外の絞り込み（テーマ／国／検索語）はすべて掛けたうえで数える
+  countWith(extra) {
+    const c = this.state.country;
+    const q = String(this.state.q || "").trim().toLowerCase();
+    return this.recs().filter(r => this.onShelf(r)
+      && (!c || r.country === c)
+      && (!q || this.searchBlob(r).indexOf(q) >= 0)
+      && extra(r)).length;
+  }
   countFor(p) {
     const t = this.state.theme;
-    return this.recs().filter(r => this.onShelf(r) && r.purpose === p && (!t || r.theme === t)).length;
+    return this.countWith(r => r.purpose === p && (!t || r.theme === t));
   }
   countForTheme(t) {
     const p = this.state.purpose;
-    return this.recs().filter(r => this.onShelf(r) && r.theme === t && (!p || r.purpose === p)).length;
+    return this.countWith(r => r.theme === t && (!p || r.purpose === p));
+  }
+
+  /** いま効いている絞り込みを、外すための操作つきで並べる（2026-08-29）。
+   *  resultLine・絞り込みチップ・空状態の3か所が同じ1つの定義を使う。
+   *  以前は resultLine と emptyLine が purpose/theme しか見ておらず、
+   *  **検索語で絞られていることが画面のどこにも出ていなかった。** */
+  filterParts() {
+    const out = [];
+    if (this.state.purpose) out.push({ label: "目的「" + this.state.purpose + "」", clear: () => this.navigate("list", null, null) });
+    if (this.state.theme) out.push({ label: "テーマ「" + this.state.theme + "」", clear: () => this.navigate("list", null, undefined, null) });
+    if (this.state.country) out.push({ label: "国「" + this.state.country + "」", clear: () => this.navigate("list", null, undefined, undefined, null) });
+    const q = String(this.state.q || "").trim();
+    if (q) out.push({ label: "ことば「" + q + "」", clear: () => this.navigate("list", null, undefined, undefined, undefined, "") });
+    return out;
   }
 
   // 検索窓（S3）：対象はタイトル（name/name_local）と summary（「何をしたか」節）のみ。
@@ -960,6 +1088,15 @@ class Component extends DCLogic {
       : by === "ai" ? "この場所の写真（機械で選定）"
       : "参考画像";
     return { show: true, url: img.url, badge: badge, alt: r.name || "", credit: img.credit };
+  }
+
+  /** 詳細ページ用。`photoFrameFor` に、元記事へのリンクの有無を足しただけのもの。
+   *  一覧のカードは `<button>` なのでリンクを内側に置けず、`source_url` を使えなかった。 */
+  detailPhotoFor(r) {
+    const f = this.photoFrameFor(r);
+    if (!f.show) return f;
+    const src = (r.image && r.image.source_url) || "";
+    return Object.assign({}, f, { hasSource: !!src, sourceUrl: src });
   }
 
   // 一覧カード（INDEX）と「今日の4件」（TOP）が共有するカードの中身。
@@ -1258,7 +1395,25 @@ class Component extends DCLogic {
 
       hasSpotcheck: !!r.spotcheck_note,
       spotcheckNote: r.spotcheck_note || "",
-      lastVerified: r.last_verified || "—"
+      lastVerified: r.last_verified || "—",
+
+      photo: this.detailPhotoFor(r),
+
+      // 訂正申立（2026-08-29 新設）。docs/limitations.md は
+      // 「レコードごとに『この記述について訂正を申し立てる』導線を置き、
+      //  受付から対応までの手順を公開する」ことを法務要件として求めている。
+      // どのレコードのどの記述かが最初から入った状態で受け取れるよう、
+      // id・名前・URL を件名と本文に埋めておく（受け手が特定に使う手間を省くため）
+      correctionUrl: CORRECTION_NEW_ISSUE
+        + "?labels=" + encodeURIComponent("訂正申立")
+        + "&title=" + encodeURIComponent("[訂正] " + r.id + " " + (r.name || ""))
+        + "&body=" + encodeURIComponent(
+            "対象のレコード: " + r.id + "\n"
+            + "見出し: " + (r.name || "") + "\n"
+            + "ページ: " + SITE_BASE + "#detail/" + r.id + "\n\n"
+            + "## どの記述ですか\n（本文から該当箇所を貼ってください）\n\n"
+            + "## 何が違いますか\n\n"
+            + "## 根拠にできる出典があれば\n（URL・刊行日・媒体名）\n")
     };
   }
 
@@ -1307,6 +1462,8 @@ class Component extends DCLogic {
       secFg: this.state.mode !== "prose" ? "var(--bg)" : "var(--ink)",
       proBg: this.state.mode === "prose" ? "var(--ink)" : "var(--surface)",
       proFg: this.state.mode === "prose" ? "var(--bg)" : "var(--ink)",
+
+      correctionLog: CORRECTION_LOG,
 
       goTop: () => this.navigate("top", null),
       goList: () => this.navigate("list", null),
@@ -1372,11 +1529,27 @@ class Component extends DCLogic {
       }),
 
       resultLine: (() => {
-        const parts = [];
-        if (sel) parts.push("目的「" + sel + "」");
-        if (selTheme) parts.push("テーマ「" + selTheme + "」");
-        return parts.length ? (parts.join("×") + "で絞り込み中 — " + list.length + "件") : (list.length + "件を表示しています");
+        const parts = this.filterParts();
+        return parts.length ? (parts.map(f => f.label).join(" × ") + " — " + list.length + "件") : (list.length + "件を表示しています");
       })(),
+
+      // 検索（一覧側）。TOPの窓と同じ挙動だが、こちらは今の絞り込みを保ったまま語だけ差し替える
+      qValue: this.state.q || "",
+      doListSearch: () => {
+        const el = document.getElementById("list-search-input");
+        this.navigate("list", null, undefined, undefined, undefined, el ? el.value.trim() : "");
+      },
+      onListSearchKeyDown: (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const el = document.getElementById("list-search-input");
+        this.navigate("list", null, undefined, undefined, undefined, el ? el.value.trim() : "");
+      },
+
+      // いま効いている絞り込みを1つずつ外せるようにする
+      hasAnyFilter: this.filterParts().length > 0,
+      activeFilters: this.filterParts(),
+      clearAllFilters: () => this.navigate("list", null, null, null, null, ""),
 
       // ── 途中経過（PROGRESS）。数字は data.json から毎回数え直す。手で書かない ──
       // 数字カード4つは767px以下で2×2にする（S3・#9）
@@ -1441,10 +1614,8 @@ class Component extends DCLogic {
       })(),
       noResult: list.length === 0,
       emptyLine: (() => {
-        const parts = [];
-        if (sel) parts.push("目的「" + sel + "」");
-        if (selTheme) parts.push("テーマ「" + selTheme + "」");
-        return parts.length ? (parts.join("×") + "のレコードはまだ1件もありません。") : "まだ1件も収録されていません。";
+        const parts = this.filterParts();
+        return parts.length ? (parts.map(f => f.label).join(" × ") + "のレコードはまだ1件もありません。") : "まだ1件も収録されていません。";
       })(),
 
       cards: list.map(r => this.cardFor(r)),
