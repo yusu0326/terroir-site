@@ -1,0 +1,93 @@
+name: 事例を提案する
+description: Terroir に載せる価値があると思う取り組みを教えてください
+title: "[提案] "
+labels: ["事例の提案"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 先に、収録の条件を見てください
+
+        Terroir に載せられるかどうかは、面白さではなく**出典で決まります**。
+        次の条件を満たさないものは、どれだけ良い取り組みでも収録できません。
+
+        **必須の条件（これだけは外せません）**
+
+        > **最新の出典が、その取り組みが始まった年から3年以上あとに書かれていること。**
+
+        Terroir が追っているのは「その後どうなったか」だからです。開始は報道されるのに、
+        その後は報道されません。始まった時点の記事しかないものは、この条件で自動的に落ちます。
+
+        **そのほかの目安**
+
+        - 独立した一次報道が3本以上あること。同じ媒体の記事でもよいですが、
+          その場合は**3本が別々の年**に書かれていること
+        - 同じプレスリリースをもとにした記事は、何本あっても1本と数えます
+        - 一覧記事・Wikipedia・YouTube は、探す手がかりとしては使いますが**出典にはしません**
+        - 記録の単位は**プロジェクト**です。自治体そのものや団体そのものではありません
+
+        条件を満たすか分からなくても構いません。**出典のURLさえ教えてもらえれば、こちらで確かめます。**
+
+  - type: input
+    id: name
+    attributes:
+      label: 取り組みの名前
+      description: 現地で呼ばれている名前を、現地の表記のままで。日本語の訳しか分からない場合はそれで構いません
+      placeholder: 例）Superkilen / 土溝農村美術館 / Askıda Fatura
+    validations:
+      required: true
+
+  - type: input
+    id: place
+    attributes:
+      label: どこで行われたか
+      description: 国と、市町村まで
+      placeholder: 例）デンマーク・コペンハーゲン ノアブロ地区
+    validations:
+      required: true
+
+  - type: input
+    id: year
+    attributes:
+      label: いつ始まったか
+      description: 分かる範囲で。おおよそでも構いません
+      placeholder: 例）2012年ごろ
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: 出典のURL
+      description: |
+        1行に1本ずつ貼ってください。
+        **そのうち1本でも、始まった年から3年以上あとに書かれたものがあると、収録できる可能性が高くなります。**
+      placeholder: |
+        https://example.com/2015/the-project-opened
+        https://example.com/2023/ten-years-later
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: どんな取り組みですか
+      description: 何をして、いま何が変わったのか。2〜3行で構いません
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 確認
+      options:
+        - label: 出典のURLは実際に開けることを確かめました
+          required: true
+        - label: この提案は自分または自分の組織が関わっている取り組みについてのものです（当てはまる場合のみチェック。関わっていても提案して構いません。記録に「運営主体の発信を含む」と明示するために聞いています）
+          required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        提案を受け取っても、**収録するとは限りません**。条件に合わなかった場合は、
+        その理由をこの課題票に返します。返答まで時間がかかることがあります。

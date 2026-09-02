@@ -1,0 +1,54 @@
+name: 訂正を申し立てる
+description: 記述に間違いがあるとき
+title: "[訂正] "
+labels: ["訂正申立"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        出典の読み違い、古くなった記述、関係者しか知りえない事実——どれでも構いません。
+
+        **受け取ってから2週間以内に、直すか直さないかを返します。**
+        直した場合は、何をどう直したかをその記事に残します。
+
+  - type: input
+    id: record
+    attributes:
+      label: どの記録ですか
+      description: 記事のURL、または末尾の識別子（例 co-0001）
+      placeholder: https://yusu0326.github.io/terroir-site/p/co-0001.html
+    validations:
+      required: true
+
+  - type: textarea
+    id: passage
+    attributes:
+      label: どの記述ですか
+      description: 本文から、該当する箇所をそのまま貼ってください
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 何が違いますか
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 根拠にできる出典があれば
+      description: |
+        URL・刊行日・媒体名。
+        **無くても申し立てて構いません。**こちらで元の出典に当たり直します
+      render: text
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        Terroir は、出典に書かれていることだけを書く方針です。
+        「出典にそう書いてあるが、その出典が事実と違う」という場合も教えてください。
+        その場合は記述を消すのではなく、**食い違いとして両方を残す**ことがあります。

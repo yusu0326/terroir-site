@@ -1,0 +1,10 @@
+# 白紙の課題票を許さない。**どちらの用件かで受け口を分ける**
+# （訂正は2週間以内に返す約束があり、提案は収録の条件を先に読んでもらう必要がある）
+blank_issues_enabled: false
+contact_links:
+  - name: いま探している事例を見る
+    url: https://yusu0326.github.io/terroir-site/wanted.html
+    about: どのテーマ・どの地域が空いているかを出しています。提案の前にどうぞ
+  - name: 収録しているものを見る
+    url: https://yusu0326.github.io/terroir-site/p/
+    about: すでに載っているかどうかは、ここで確かめられます
