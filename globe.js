@@ -3,6 +3,13 @@
 // 選択は window の 'terroir-globe-select' で通知する（detail: {ids, label}）。
 (function () {
   const WORLD = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+  // 改竄されたものを掴まないよう、中身のハッシュで固定する（2026-09-02）。
+  // 他のCDN読み込み（d3 / topojson / React 等）は `integrity` 属性で固めてあるが、
+  // ここだけ素通しだった。**これはコードではなくデータ**なので実行はされないが、
+  // 地図の形をCDN側から差し替えられる余地は残る。`fetch` の integrity で塞ぐ。
+  // 値は実ファイルから計算した（sha384）。**バージョンを上げるときは取り直すこと**——
+  // 古いハッシュのままにすると地図が丸ごと出なくなる
+  const WORLD_SRI = "sha384-yOCJ+8ShBm8UDqtAVtAvxTDDf4gXo5edxl/YG0FmVC5OTmqVLl7utuVGBDEeZWHf";
   // v2 で追加：NL（オランダ）。座標は世界地図の重心から計算するので手入力していない。
   // ISO 3166-1 の数値コード。値は world-atlas の objects.countries[].id をそのまま引いたもので、
   // 座標ではない（重心は世界地図から計算する）。
@@ -51,7 +58,7 @@
       let topo, data;
       try {
         [topo, data] = await Promise.all([
-          d3.json(WORLD),
+          d3.json(WORLD, { integrity: WORLD_SRI }),
           // 本体（index.dc.html の head）が用意した共有の取得口を使う。
           // ここで自前に取りに行くと、本体とあわせて同じ 1.7MB を2回ダウンロードする
           window.terroirData()

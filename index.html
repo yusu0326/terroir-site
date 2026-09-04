@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,15 @@
 <meta property="og:site_name" content="Terroir">
 <meta property="og:title" content="Terroir — 世界中の、まちを変えた取り組みを、始まりから今まで">
 <meta property="og:description" content="世界のまちで実際に行われた取り組みを、始まった年から今までの形で記録する事例データベース。始まってから3年以上あとに書かれた出典があるものだけを収録しています。">
-<meta name="twitter:card" content="summary">
+<meta property="og:url" content="https://yusu0326.github.io/terroir-site/">
+<link rel="canonical" href="https://yusu0326.github.io/terroir-site/">
+<!-- OGP画像は自前で作った文字だけの版（scripts/ogimage.py）。
+     収録写真はどれも出典が権利を持っており、看板に使うのは権利の扱いとして誤りであるため -->
+<meta property="og:image" content="https://yusu0326.github.io/terroir-site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='27' fill='%233F9E56' stroke='%2314170F' stroke-width='5'/%3E%3C/svg%3E">
 <script>
 /* data.json は本体（一覧・詳細）と globe.js の両方が要る。それぞれが素直に取りに行くと
@@ -31,6 +39,16 @@ window.terroirData = function () {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
+/* キーボードで辿るときの現在位置（2026-09-02 追加）。
+   これが無いと、Tab で進んでいる人にどこにいるのか分からない。
+   `:focus-visible` を使うので、マウスで押したときには出ない */
+:focus-visible{outline:3px solid var(--green-deep,#2C7440);outline-offset:3px;border-radius:6px}
+/* 本文へ飛ばすリンク。**Tab の1回目で出る。** 使わない人には見えない。
+   これが無いと、キーボードの人は毎ページ絞り込みのチップを全部通り抜けさせられる */
+.skip{position:absolute;left:-9999px;top:0;z-index:100}
+.skip:focus{left:8px;top:8px;padding:10px 16px;background:var(--ink);color:var(--bg);
+  border-radius:999px;font-weight:700;font-size:14px;text-decoration:none}
+
 /* 色は「ライトの定義 → prefers-color-scheme:dark で上書き」の2段構造（他方のUIと同じ方式）。
    ライトの具体値は既存のまま動かしていない。ダークの値は暫定（配色の最終決定はデザイン会話）。
    green/red/yellow/olive などの強い色（アクセント）はテーマで変えていない。
@@ -90,6 +108,8 @@ button{font:inherit;color:inherit;}
 
 <div style="font-family:var(--font-sans);font-size:16px;line-height:1.9;min-height:100vh;padding-bottom:80px;">
 
+  <a class="skip" href="#main" onClick="{{ skipToMain }}">本文へ移動</a>
+
   <!-- ヘッダ -->
   <div id="page-header" style="position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:3px solid var(--ink);">
     <div style="max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -103,6 +123,11 @@ button{font:inherit;color:inherit;}
       <div style="background:var(--ink);color:var(--bg);border-radius:999px;min-width:48px;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;padding:0 14px;">{{ headerCount }}</div>
     </div>
   </div>
+
+  <!-- 飛ばしリンクの着地点。ここに焦点を移すと、以降の Tab は本文から続く。
+       **画面の構造は変えない**（各ビューを包み直すと崩れる危険があるので、
+       着地点だけを置く） -->
+  <div id="main" tabindex="-1" style="outline:none;"></div>
 
   <!-- 読み込みエラー -->
   <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
@@ -164,7 +189,7 @@ button{font:inherit;color:inherit;}
           </div>
           <div style="margin-top:18px;display:grid;grid-template-columns:{{ todayCols }};gap:16px;">
             <sc-for list="{{ todayCards }}" as="c" hint-placeholder-count="4">
-              <button onClick="{{ c.open }}" style="cursor:pointer;text-align:left;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
+              <a href="{{ c.href }}" onClick="{{ c.open }}" style="cursor:pointer;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
                 <sc-if value="{{ c.photo.show }}" hint-placeholder-val="{{ false }}">
                   <div style="position:relative;margin:-20px -20px 0;border-bottom:3px solid var(--ink);border-radius:23px 23px 0 0;overflow:hidden;aspect-ratio:16/9;">
                     <img src="{{ c.photo.url }}" alt="{{ c.photo.alt }}" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'">
@@ -183,7 +208,7 @@ button{font:inherit;color:inherit;}
                 <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">{{ c.meta }}</div>
                 <div style="font-size:14px;font-weight:500;line-height:1.85;text-wrap:pretty;">{{ c.summary }}</div>
                 <div style="margin-top:2px;font-size:12.5px;font-weight:700;color:var(--green-deep);">{{ c.span }}</div>
-              </button>
+              </a>
             </sc-for>
           </div>
         </div>
@@ -346,7 +371,7 @@ button{font:inherit;color:inherit;}
 
       <div style="margin-top:14px;display:grid;grid-template-columns:{{ cardCols }};gap:16px;">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="3">
-          <button onClick="{{ c.open }}" style="cursor:pointer;text-align:left;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
+          <a href="{{ c.href }}" onClick="{{ c.open }}" style="cursor:pointer;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);padding:20px;display:flex;flex-direction:column;gap:10px;" style-hover="transform:translate(-2px,-2px)">
             <sc-if value="{{ c.photo.show }}" hint-placeholder-val="{{ false }}">
               <div style="position:relative;margin:-20px -20px 0;border-bottom:3px solid var(--ink);border-radius:23px 23px 0 0;overflow:hidden;aspect-ratio:16/9;">
                 <img src="{{ c.photo.url }}" alt="{{ c.photo.alt }}" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'">
@@ -365,7 +390,7 @@ button{font:inherit;color:inherit;}
             <div style="font-size:12.5px;font-weight:500;color:var(--fg-muted);">{{ c.meta }}</div>
             <div style="font-size:14px;font-weight:500;line-height:1.85;text-wrap:pretty;">{{ c.summary }}</div>
             <div style="margin-top:2px;font-size:12.5px;font-weight:700;color:var(--green-deep);">{{ c.span }}</div>
-          </button>
+          </a>
         </sc-for>
       </div>
     </div>
@@ -740,6 +765,8 @@ button{font:inherit;color:inherit;}
     <!-- 静的ページへの入口（2026-08-29）。**ここが唯一の <a href> のクロール導線である。**
          一覧のカードは <button> なので、クローラはこの1本からしか153件に辿り着けない -->
     <div style="margin-top:12px;font-size:12px;font-weight:700;display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="./about.html" style="color:var(--green-deep);">このサイトについて（誰が・どう確かめているか）</a>
+      <a href="./wanted.html" style="color:var(--green-deep);">いま探している事例（提案を受け付けています）</a>
       <a href="./p/" style="color:var(--green-deep);">すべての記録を一覧で見る（{{ headerCount }}・JavaScript なしで読めます）</a>
       <a href="./data/" style="color:var(--green-deep);">データをダウンロードする（CSV／JSON）</a>
     </div>
@@ -995,7 +1022,12 @@ class Component extends DCLogic {
     this._tocObserver = new IntersectionObserver(entries => {
       entries.forEach(en => {
         const btns = toc.querySelectorAll('.toc-item[data-target="' + en.target.id + '"]');
-        btns.forEach(b => b.classList.toggle("active", en.isIntersecting));
+        btns.forEach(b => {
+          b.classList.toggle("active", en.isIntersecting);
+          // class は見た目にしか効かない。**現在位置は支援技術にも伝える**
+          if (en.isIntersecting) b.setAttribute("aria-current", "true");
+          else b.removeAttribute("aria-current");
+        });
       });
     }, { rootMargin: "-" + offset + "px 0px -70% 0px", threshold: 0 });
     uniq.forEach(el => this._tocObserver.observe(el));
@@ -1183,7 +1215,19 @@ class Component extends DCLogic {
       followBg: r.follow_up === "濃い" ? "var(--green)" : r.follow_up === "なし" ? "var(--ink)" : "var(--surface)",
       followFg: (r.follow_up === "濃い" || r.follow_up === "なし") ? "var(--surface)" : "var(--ink)",
       photo: this.photoFrameFor(r),
-      open: () => this.navigate("detail", r.id)
+
+      // カードは `<a href>` である（2026-09-02 に `<button>` から変えた）。
+      // **引用されることを目的にしたデータベースで、リンクをコピーできない・
+      // 新しいタブで開けないのは致命的だった。** href を持たせたうえで、
+      // 普通のクリックだけ横取りして画面内で開く。
+      // 修飾キー付き・中クリック・右クリックはブラウザに任せる（そうしないと
+      // 「新しいタブで開く」が効かないままになる）
+      href: this.hashFor("detail", r.id),
+      open: (e) => {
+        if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
+        if (e && e.preventDefault) e.preventDefault();
+        this.navigate("detail", r.id);
+      }
     };
   }
 
@@ -1529,6 +1573,16 @@ class Component extends DCLogic {
       proFg: this.state.mode === "prose" ? "var(--bg)" : "var(--ink)",
 
       correctionLog: CORRECTION_LOG,
+
+      // 飛ばしリンク。**href はそのままにして、既定の動きだけ止める。**
+      // #main をそのまま踏ませると parseHash が「top」と読んで画面が戻ってしまう
+      skipToMain: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const el = document.getElementById("main");
+        if (!el) return;
+        el.focus();
+        el.scrollIntoView({ block: "start" });
+      },
 
       goTop: () => this.navigate("top", null),
       goList: () => this.navigate("list", null),
